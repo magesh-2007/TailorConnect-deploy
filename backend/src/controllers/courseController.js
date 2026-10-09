@@ -33,12 +33,13 @@ const formatCourse = (c) => {
 
 export const getCourses = async (req, res, next) => {
   try {
-    const { q, category, location, status, page = 1, limit = 20 } = req.query
+    const { q, category, location, status, tailorId, page = 1, limit = 20 } = req.query
     const skip = (Number(page) - 1) * Number(limit)
 
     const filter = { status: status || 'ACTIVE' }
     if (category && category !== 'All') filter.category = new RegExp(category, 'i')
     if (location && location !== 'All') filter.location = new RegExp(location, 'i')
+    if (tailorId) filter.tailorId = tailorId
     if (q) filter.$or = [
       { title: new RegExp(q, 'i') },
       { description: new RegExp(q, 'i') },
@@ -178,6 +179,7 @@ export const updateCourse = async (req, res, next) => {
 export const registerForCourse = async (req, res, next) => {
   try {
     const { courseId } = req.params
+    const { paymentId, amount } = req.body || {}
     const course = await Course.findById(courseId).catch(() => null)
     if (!course) return sendError(res, 'Course not found.', 404)
 
@@ -191,10 +193,14 @@ export const registerForCourse = async (req, res, next) => {
     const existing = await CourseRegistration.findOne({ studentId: req.user._id, courseId })
     if (existing) return sendError(res, 'You are already registered for this course.', 409)
 
+    const paidAmount = Number(amount || course.price || 0)
+
     const reg = await CourseRegistration.create({
       studentId: req.user._id,
       courseId,
       tailorId: course.tailorId,
+      paymentId: paymentId || `PAY-CRS-${Date.now().toString().slice(-6)}`,
+      amountPaid: paidAmount,
       status: 'REGISTERED'
     })
 
@@ -204,14 +210,19 @@ export const registerForCourse = async (req, res, next) => {
     course.status = newStatus
     await course.save()
 
-    const [trainer] = await Promise.all([User.findById(course.tailorId)])
+    // Credit revenue amount directly to the respective tailor's account balance
+    const tailorProfile = await TailorProfile.findOne({ userId: course.tailorId })
+    if (tailorProfile) {
+      tailorProfile.totalEarnings = (tailorProfile.totalEarnings || 0) + paidAmount
+      await tailorProfile.save()
+    }
 
     // Notify student
     const sn = await Notification.create({
       userId: req.user._id,
       type: 'COURSE_REGISTERED',
-      title: 'Course Registration Confirmed 🎓',
-      message: `You have successfully enrolled in "${course.title}". Begins on ${course.startDate}.`,
+      title: 'Course Registration & Payment Confirmed 🎓',
+      message: `You have successfully enrolled in "${course.title}" for ₹${paidAmount}. Full video lesson access is unlocked!`,
       relatedId: courseId
     })
     emitNotification(req.user._id.toString(), sn.toObject())
@@ -220,15 +231,16 @@ export const registerForCourse = async (req, res, next) => {
     const tn = await Notification.create({
       userId: course.tailorId,
       type: 'COURSE_REGISTERED',
-      title: 'New Student Enrollment',
-      message: `${req.user.name} registered for "${course.title}". (${newCount}/${course.capacity} seats filled).`,
+      title: 'New Student Enrollment & Payment Credited 💰',
+      message: `${req.user.name} registered for "${course.title}". ₹${paidAmount} credited to your account! (${newCount}/${course.capacity} seats filled).`,
       relatedId: courseId
     })
     emitNotification(course.tailorId.toString(), tn.toObject())
 
-    return sendSuccess(res, 'Course registration successful.', {
+    return sendSuccess(res, 'Course registration and payment successful.', {
       registration: reg.toObject(),
-      course: formatCourse(course)
+      course: formatCourse(course),
+      creditedAmount: paidAmount
     })
   } catch (err) {
     next(err)

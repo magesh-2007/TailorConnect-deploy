@@ -122,6 +122,10 @@ export default function Register() {
     const result = await register(currentRole, payload)
     setLoading(false)
     if (result.success) {
+      if (result.requiresVerification) {
+        navigate(`/verify-email?email=${encodeURIComponent(result.email || email.trim())}&role=${currentRole}`)
+        return
+      }
       const path =
         ROLE_DASHBOARD[result.user?.role?.toLowerCase()] ||
         ROLE_DASHBOARD[currentRole] || '/customer/dashboard'

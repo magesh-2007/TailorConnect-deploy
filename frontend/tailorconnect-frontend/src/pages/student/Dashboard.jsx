@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import Button from '../../components/Button'
 import ProgressBar from '../../components/ProgressBar'
 
 export default function StudentDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [courses, setCourses] = useState([])
   const [certificates, setCertificates] = useState([])
   const [assignments, setAssignments] = useState([])
@@ -90,15 +92,15 @@ export default function StudentDashboard() {
       {/* PAGE HEADER */}
       <div className="page-header">
         <div>
-          <h1>Welcome, {user?.name || 'Student'} 🎓</h1>
-          <p>Track your tailoring masterclasses, practice needlework lessons, submit assignments, and earn verified certificates.</p>
+          <h1>{t('Welcome,')} {user?.name || t('Students')} 🎓</h1>
+          <p>{t('Track your tailoring masterclasses, practice needlework lessons, submit assignments, and earn verified certificates.')}</p>
         </div>
         <div className="page-actions">
           <Link to="/student/courses">
-            <Button variant="primary">🔍 Browse All Courses</Button>
+            <Button variant="primary">{t('🔍 Browse All Courses')}</Button>
           </Link>
           <Link to="/student/lessons">
-            <Button variant="outline">🎥 Resume Next Lesson</Button>
+            <Button variant="outline">🎥 {t('Lessons')}</Button>
           </Link>
         </div>
       </div>
@@ -106,48 +108,48 @@ export default function StudentDashboard() {
       {/* 4 SPECIFIED STUDENT KPIS */}
       <div className="stat-grid">
         <div className="stat-card">
-          <h3>Enrolled Courses</h3>
+          <h3>{t('Enrolled Courses')}</h3>
           <div className="stat-value" style={{ color: 'var(--primary)' }}>
             {enrolledCount}
           </div>
-          <span className="stat-subtitle">Active learning curriculums</span>
+          <span className="stat-subtitle">{t('Active learning curriculums') || 'Curriculums'}</span>
         </div>
 
         <div className="stat-card">
-          <h3>Completed Courses</h3>
+          <h3>{t('Completed Certificates') || t('Completed Orders')}</h3>
           <div className="stat-value" style={{ color: 'var(--success)' }}>
             {completedCount}
           </div>
-          <span className="stat-subtitle">Successfully finished masterclasses</span>
+          <span className="stat-subtitle">{t('Successfully delivered') || 'Finished'}</span>
         </div>
 
         <div className="stat-card">
-          <h3>Pending Assignments</h3>
+          <h3>{t('Pending Assignments')}</h3>
           <div className="stat-value" style={{ color: 'var(--warning)' }}>
             {pendingAssignmentsCount}
           </div>
-          <span className="stat-subtitle">Practical stitch tasks due</span>
+          <span className="stat-subtitle">{t('Practical stitch tasks due') || 'Tasks due'}</span>
         </div>
 
         <div className="stat-card">
-          <h3>Certificates Earned</h3>
+          <h3>{t('Certificates')}</h3>
           <div className="stat-value" style={{ color: 'var(--primary-dark)' }}>
             {certsCount}
           </div>
-          <span className="stat-subtitle">Accredited artisan credentials</span>
+          <span className="stat-subtitle">{t('Accredited boutique credentials') || 'Credentials'}</span>
         </div>
       </div>
 
-      {/* ENROLLED COURSES SECTION (SPECIFIED CARD FIELDS: Course, Instructor, Duration, Lessons, Progress, Continue) */}
+      {/* ENROLLED COURSES SECTION */}
       <div style={{ marginBottom: 16 }} className="flex-between">
         <div>
-          <h2 style={{ fontSize: 18, margin: 0 }}>My Active Learning Courses</h2>
+          <h2 style={{ fontSize: 18, margin: 0 }}>{t('My Courses')}</h2>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: '2px 0 0 0' }}>
-            Continue video lessons and complete needlework practice assignments
+            {t('Resume Learning')}
           </p>
         </div>
         <Link to="/student/my-courses" style={{ color: 'var(--primary)', fontWeight: 600, fontSize: 13 }}>
-          View All Enrolled Courses →
+          {t('View All →')}
         </Link>
       </div>
 

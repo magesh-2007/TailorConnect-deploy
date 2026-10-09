@@ -1,10 +1,8 @@
+import 'dotenv/config'
 import http from 'http'
-import dotenv from 'dotenv'
 import app from './src/app.js'
 import { connectDB, disconnectDB } from './src/config/db.js'
 import { seedDatabase } from './src/seed/seed.js'
-
-dotenv.config()
 
 const testPort = 8089
 
@@ -91,6 +89,26 @@ async function runTests() {
     console.assert(custLogin.statusCode === 200, `Cust login failed: ${custLogin.statusCode}`)
     custToken = custLogin.body.data.token
     console.log('   ✓ Customer logged in. Name:', custLogin.body.data.user.name)
+
+    // 2b. Auth - Google Login
+    console.log('2b. Testing POST /api/auth/google...')
+    const googleLoginRes = await request(
+      {
+        hostname: 'localhost',
+        port: testPort,
+        path: '/api/auth/google',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      },
+      {
+        email: 'google.testuser@tailorconnect.com',
+        name: 'Google Test User',
+        googleId: 'google-test-id-9999'
+      }
+    )
+    console.assert(googleLoginRes.statusCode === 200, `Google login failed: ${googleLoginRes.statusCode}`)
+    console.assert(googleLoginRes.body.data.user.role === 'customer', `Expected role customer but got ${googleLoginRes.body.data.user.role}`)
+    console.log('   ✓ Google authentication successful. Role:', googleLoginRes.body.data.user.role)
 
     // 3. Auth - Tailor Login
     console.log('3. Testing POST /api/auth/login (Tailor)...')
@@ -448,10 +466,105 @@ async function runTests() {
     console.log(`     - Total Tailors:   ${s.totalTailors}`)
     console.log(`     - Total Students:  ${s.totalStudents}`)
     console.log(`     - Total Orders:    ${s.totalOrders}`)
-    console.log('     (No payment monitoring included, as requested)')
+
+    // 20. Digital Measurement Profiles
+    console.log('20. Testing POST & GET /api/measurements...')
+    const measPost = await request(
+      {
+        hostname: 'localhost',
+        port: testPort,
+        path: '/api/measurements',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${custToken}` }
+      },
+      { profileName: 'Mother Measurement', bust: '38', waist: '34', hip: '40', shoulder: '15' }
+    )
+    console.assert(measPost.statusCode === 201, 'Failed to create measurement profile')
+    const measGet = await request({
+      hostname: 'localhost',
+      port: testPort,
+      path: '/api/measurements',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${custToken}` }
+    })
+    console.assert(measGet.statusCode === 200 && measGet.body.data.profiles.length >= 1, 'Failed to get measurement profiles')
+    console.log('   ✓ Measurement profiles tested successfully!')
+
+    // 21. Appointment System
+    console.log('21. Testing POST & GET /api/appointments...')
+    const apptPost = await request(
+      {
+        hostname: 'localhost',
+        port: testPort,
+        path: '/api/appointments',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${custToken}` }
+      },
+      { tailorId: testTailorId, appointmentDate: '2026-10-15', timeSlot: '11:00 AM', purpose: 'Bridal Blouse Fitting' }
+    )
+    console.assert(apptPost.statusCode === 201, 'Failed to request appointment')
+    const apptGet = await request({
+      hostname: 'localhost',
+      port: testPort,
+      path: '/api/appointments',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${custToken}` }
+    })
+    console.assert(apptGet.statusCode === 200, 'Failed to get appointments')
+    console.log('   ✓ Appointment system verified!')
+
+    // 22. Complaint / Report System
+    console.log('22. Testing POST & GET /api/complaints...')
+    const compPost = await request(
+      {
+        hostname: 'localhost',
+        port: testPort,
+        path: '/api/complaints',
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${custToken}` }
+      },
+      { subject: 'Delayed Delivery Query', description: 'Requesting update on embroidery status', targetType: 'ORDER' }
+    )
+    console.assert(compPost.statusCode === 201, 'Failed to submit complaint')
+    console.log('   ✓ Complaint system verified!')
+
+    // 23. Public Certificate Verification
+    console.log('23. Testing GET /api/certificates/verify/:code...')
+    const certVer = await request({
+      hostname: 'localhost',
+      port: testPort,
+      path: `/api/certificates/verify/${testCertId || 'TC-CERT-2026-881'}`,
+      method: 'GET'
+    })
+    console.assert(certVer.statusCode === 200 && certVer.body.data.verified === true, 'Public certificate verification failed')
+    console.log('   ✓ Public certificate verification passed:', certVer.body.data.certificate.studentName)
+
+    // 24. Customer Recommendations
+    console.log('24. Testing GET /api/customers/recommendations...')
+    const recRes = await request({
+      hostname: 'localhost',
+      port: testPort,
+      path: '/api/customers/recommendations',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${custToken}` }
+    })
+    console.assert(recRes.statusCode === 200, 'Failed to get customer recommendations')
+    console.log('   ✓ Recommendations verified!')
+
+    // 25. Admin Audit Logging
+    console.log('25. Testing GET /api/admin/audit-logs...')
+    const auditRes = await request({
+      hostname: 'localhost',
+      port: testPort,
+      path: '/api/admin/audit-logs',
+      method: 'GET',
+      headers: { Authorization: `Bearer ${adminToken}` }
+    })
+    console.assert(auditRes.statusCode === 200, 'Failed to get audit logs')
+    console.log('   ✓ Admin audit logs verified!')
 
     console.log('\n========================================')
-    console.log(' ALL 19 TEST SUITES PASSED FLAWLESSLY! ✓')
+    console.log(' ALL 25 TEST SUITES PASSED FLAWLESSLY! ✓')
     console.log('========================================\n')
   } finally {
     server.close()

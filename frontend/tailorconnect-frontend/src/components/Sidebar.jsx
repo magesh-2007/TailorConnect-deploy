@@ -1,6 +1,48 @@
 import React from 'react'
 import { NavLink, useNavigate, Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
+
+const LABEL_KEY_MAP = {
+  'Dashboard': 'dashboard',
+  'Find Tailors': 'findTailors',
+  'Tailors': 'tailors',
+  'Tailoring Requests': 'tailoringRequests',
+  'Incoming Requests': 'incomingRequests',
+  'Appointments': 'appointments',
+  'Payments & Invoices': 'payments',
+  'Payments': 'payments',
+  'Wishlist': 'wishlist',
+  'Chatbot': 'chatbot',
+  'AI Chatbot': 'chatbot',
+  'Stitch AI': 'chatbot',
+  'Messages': 'chat',
+  'Notifications': 'notifications',
+  'Profile': 'profile',
+  'Settings': 'settings',
+  'Quotations': 'quotations',
+  'Stitching Progress': 'stitchingProgress',
+  'Offers & Discounts': 'offers',
+  'Offers': 'offers',
+  'My Services': 'myServices',
+  'My Courses': 'myCourses',
+  'Browse Courses': 'browseCourses',
+  'Courses': 'courses',
+  'Portfolio': 'portfolio',
+  'Reviews': 'reviews',
+  'Customers': 'customers',
+  'Users': 'users',
+  'Students': 'students',
+  'Employees': 'employees',
+  'Tailor Verification': 'tailorVerification',
+  'Complaints': 'complaints',
+  'Reports & Analytics': 'reports',
+  'Lessons': 'lessons',
+  'Assignments': 'assignments',
+  'Certificates': 'certificates',
+  'Progress': 'progress',
+  'Orders': 'orders',
+}
 
 const ROLE_TITLES = {
   customer: 'Customer Portal',
@@ -12,6 +54,7 @@ const ROLE_TITLES = {
 
 export default function Sidebar({ role = 'customer', title, links = [], isOpen = false, onClose }) {
   const { logout } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const handleLogout = () => {
@@ -19,7 +62,8 @@ export default function Sidebar({ role = 'customer', title, links = [], isOpen =
     navigate('/login')
   }
 
-  const displayTitle = title || ROLE_TITLES[role] || 'TailorConnect'
+  const rawTitle = title || ROLE_TITLES[role] || 'TailorConnect'
+  const displayTitle = t(rawTitle) || rawTitle
 
   return (
     <aside className={`sidebar ${isOpen ? 'open' : ''}`} role="navigation" aria-label="Main navigation">
@@ -65,19 +109,23 @@ export default function Sidebar({ role = 'customer', title, links = [], isOpen =
 
       {/* ── Navigation Links ── */}
       <nav className="sidebar-nav">
-        {links.map((link) => (
-          <NavLink
-            key={link.to}
-            to={link.to}
-            end={link.end}
-            onClick={onClose}
-            className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
-          >
-            <span className="sidebar-icon" aria-hidden="true">{link.icon}</span>
-            <span className="sidebar-label">{link.label}</span>
-            {link.badge && <span className="sidebar-badge">{link.badge}</span>}
-          </NavLink>
-        ))}
+        {links.map((link) => {
+          const key = LABEL_KEY_MAP[link.label]
+          const translatedLabel = t(link.label) || (key ? t(key) : link.label)
+          return (
+            <NavLink
+              key={link.to}
+              to={link.to}
+              end={link.end}
+              onClick={onClose}
+              className={({ isActive }) => `sidebar-link${isActive ? ' active' : ''}`}
+            >
+              <span className="sidebar-icon" aria-hidden="true">{link.icon}</span>
+              <span className="sidebar-label">{translatedLabel}</span>
+              {link.badge && <span className="sidebar-badge">{link.badge}</span>}
+            </NavLink>
+          )
+        })}
 
         {/* ── Logout ── */}
         <div className="sidebar-footer" style={{ marginTop: 'auto', paddingTop: 12 }}>
@@ -119,7 +167,7 @@ export default function Sidebar({ role = 'customer', title, links = [], isOpen =
                 <line x1="21" y1="12" x2="9" y2="12"/>
               </svg>
             </span>
-            <span className="sidebar-label">Logout</span>
+            <span className="sidebar-label">{t('Sign Out') || t('logout') || 'Logout'}</span>
           </button>
         </div>
       </nav>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/Sidebar'
+import ChatbotWidget from '../components/ChatbotWidget'
 
 const LINKS = {
   customer: [
@@ -11,7 +12,7 @@ const LINKS = {
     { to: '/customer/appointments',  label: 'Appointments',       icon: '📅' },
     { to: '/customer/payments',      label: 'Payments & Invoices',icon: '💳' },
     { to: '/customer/wishlist',      label: 'Wishlist',           icon: '❤️' },
-    { to: '/customer/ai',            label: 'Stitch AI',          icon: '✦' },
+    { to: '/customer/chatbot',       label: 'Chatbot',            icon: '🤖' },
     { to: '/customer/chat',          label: 'Messages',           icon: '💬' },
     { to: '/customer/notifications', label: 'Notifications',      icon: '🔔' },
     { to: '/customer/profile',       label: 'Profile',            icon: '👤' },
@@ -41,7 +42,6 @@ const LINKS = {
     { to: '/student/my-courses', label: 'My Courses', icon: '📚' },
     { to: '/student/lessons', label: 'Lessons', icon: '🎥' },
     { to: '/student/assignments', label: 'Assignments', icon: '📝' },
-    { to: '/student/quizzes', label: 'Quizzes', icon: '❓' },
     { to: '/student/certificates', label: 'Certificates', icon: '🏆' },
     { to: '/student/progress', label: 'Progress', icon: '📈' },
     { to: '/student/chat', label: 'Messages', icon: '💬' },
@@ -58,7 +58,6 @@ const LINKS = {
     { to: '/admin/employees',           label: 'Employees',             icon: '🏢' },
     { to: '/admin/tailor-verification', label: 'Tailor Verification',   icon: '✅' },
     { to: '/admin/requests',            label: 'Tailoring Requests',    icon: '📦' },
-    { to: '/admin/quotations',          label: 'Quotations',            icon: '🏷️' },
     { to: '/admin/appointments',        label: 'Appointments',          icon: '📅' },
     { to: '/admin/payments',            label: 'Payments & Invoices',   icon: '💳' },
     { to: '/admin/courses',             label: 'Courses',               icon: '📚' },
@@ -113,6 +112,7 @@ export default function DashboardLayout({ role = 'customer', children }) {
       <div className="app-main">
         <Navbar onToggleSidebar={() => setSidebarOpen((prev) => !prev)} />
         <main className="app-content">{children}</main>
+        {role === 'customer' && <ChatbotWidget />}
       </div>
     </div>
   )

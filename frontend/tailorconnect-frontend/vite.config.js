@@ -3,8 +3,19 @@ import react from '@vitejs/plugin-react'
 
 export default defineConfig({
   plugins: [react()],
+  resolve: {
+    preserveSymlinks: true
+  },
   server: {
-    port: 5173
+    port: 5173,
+    host: true,
+    fs: {
+      strict: false
+    },
+    watch: {
+      usePolling: true,
+      interval: 100
+    }
   },
   build: {
     chunkSizeWarningLimit: 1000,
@@ -17,4 +28,3 @@ export default defineConfig({
     }
   }
 })
-

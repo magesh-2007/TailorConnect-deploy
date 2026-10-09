@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
+import { useTheme } from '../context/ThemeContext'
 import api from '../services/api'
 
 const ROLE_LABELS = {
@@ -48,7 +50,10 @@ function SearchIcon() {
 }
 
 export default function Navbar({ onToggleSidebar }) {
-  const { user, logout } = useAuth()
+  const { user, logout, switchRole } = useAuth()
+  const { lang, setLang, t } = useLanguage()
+  const { themeMode, toggleTheme, primaryColor, setColor, presetColors } = useTheme()
+  const [showColorMenu, setShowColorMenu] = useState(false)
   const navigate = useNavigate()
   const [unreadCount, setUnreadCount] = useState(0)
 
@@ -92,16 +97,180 @@ export default function Navbar({ onToggleSidebar }) {
           </span>
           <input
             type="text"
-            placeholder="Search tailoring requests, tailors, courses…"
+            placeholder={t('Search tailoring requests, tailors, courses…') || 'Search tailoring requests, tailors, courses…'}
             aria-label="Search platform"
           />
         </div>
       </div>
 
       {/* ── Right: Actions ── */}
-      <div className="navbar-right">
+      <div className="navbar-right" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+        {/* Multilingual Selector */}
+        <select
+          value={lang}
+          onChange={(e) => setLang(e.target.value)}
+          style={{
+            padding: '6px 10px',
+            borderRadius: '7px',
+            border: '1.5px solid var(--border)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            fontSize: '12px',
+            fontWeight: 600,
+            cursor: 'pointer'
+          }}
+          title="Select Language"
+        >
+          <option value="en">🌐 English</option>
+          <option value="ta">🌐 தமிழ்</option>
+          <option value="hi">🌐 हिंदी</option>
+          <option value="tanglish">🌐 Tanglish</option>
+        </select>
+
+        {/* Theme Mode Toggle (Dark / Light) */}
+        <button
+          type="button"
+          onClick={toggleTheme}
+          style={{
+            padding: '6px 10px',
+            borderRadius: '7px',
+            border: '1.5px solid var(--border)',
+            backgroundColor: 'var(--bg-card)',
+            color: 'var(--text-primary)',
+            fontSize: '14px',
+            fontWeight: 600,
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            transition: 'var(--transition)'
+          }}
+          title={themeMode === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          aria-label="Toggle dark/light theme"
+        >
+          <span>{themeMode === 'dark' ? '☀️' : '🌙'}</span>
+        </button>
+
+        {/* Color Palette / Any Color Picker */}
+        <div style={{ position: 'relative' }}>
+          <button
+            type="button"
+            onClick={() => setShowColorMenu((prev) => !prev)}
+            style={{
+              padding: '6px 10px',
+              borderRadius: '7px',
+              border: '1.5px solid var(--border)',
+              backgroundColor: 'var(--bg-card)',
+              color: 'var(--text-primary)',
+              fontSize: '14px',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6
+            }}
+            title="Change Theme Accent Color"
+            aria-label="Change Accent Color"
+          >
+            <span
+              style={{
+                width: 14,
+                height: 14,
+                borderRadius: '50%',
+                backgroundColor: primaryColor || '#0F5C5E',
+                display: 'inline-block',
+                border: '1.5px solid #FFFFFF',
+                boxShadow: '0 0 2px rgba(0,0,0,0.4)'
+              }}
+            />
+            <span style={{ fontSize: 11, fontWeight: 700 }}>🎨</span>
+          </button>
+
+          {showColorMenu && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 42,
+                right: 0,
+                width: 250,
+                backgroundColor: 'var(--bg-card)',
+                color: 'var(--text-primary)',
+                border: '1.5px solid var(--border)',
+                borderRadius: 12,
+                boxShadow: '0 12px 30px rgba(0,0,0,0.18)',
+                padding: 14,
+                zIndex: 9999,
+              }}
+            >
+              <div style={{ fontSize: 12, fontWeight: 700, marginBottom: 8, color: 'var(--text-secondary)' }}>
+                PRESET COLORS
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, marginBottom: 12 }}>
+                {presetColors.map((c) => (
+                  <button
+                    key={c.hex}
+                    type="button"
+                    onClick={() => {
+                      setColor(c.hex)
+                      setShowColorMenu(false)
+                    }}
+                    style={{
+                      width: 28,
+                      height: 28,
+                      borderRadius: '50%',
+                      backgroundColor: c.hex,
+                      border: primaryColor?.toLowerCase() === c.hex?.toLowerCase() ? '2.5px solid #FFFFFF' : '1px solid transparent',
+                      boxShadow: primaryColor?.toLowerCase() === c.hex?.toLowerCase() ? `0 0 0 2px ${c.hex}` : 'none',
+                      cursor: 'pointer',
+                    }}
+                    title={c.name}
+                  />
+                ))}
+              </div>
+
+              <div style={{ borderTop: '1px solid var(--border)', paddingTop: 10 }}>
+                <label style={{ display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer', fontSize: 12, fontWeight: 600 }}>
+                  <input
+                    type="color"
+                    value={primaryColor || '#0F5C5E'}
+                    onChange={(e) => setColor(e.target.value)}
+                    style={{ width: 30, height: 26, border: 'none', cursor: 'pointer', background: 'none' }}
+                  />
+                  <span>Pick Any Color ({primaryColor})</span>
+                </label>
+              </div>
+            </div>
+          )}
+        </div>
+
         {user ? (
           <>
+            {/* Quick Switch to Customer button if currently in another role */}
+            {role !== 'customer' && (
+              <button
+                type="button"
+                onClick={() => switchRole('customer')}
+                style={{
+                  padding: '6px 12px',
+                  borderRadius: '8px',
+                  border: '1.5px solid #0284C7',
+                  backgroundColor: '#E0F2FE',
+                  color: '#0369A1',
+                  fontSize: '12px',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 5,
+                  transition: 'all 0.15s',
+                }}
+                title="Switch to Customer Dashboard"
+                aria-label="Switch to Customer Portal"
+              >
+                <span>👤</span>
+                <span>Customer Portal</span>
+              </button>
+            )}
+
             {/* Wishlist heart — customer only */}
             {role === 'customer' && (
               <Link
@@ -182,7 +351,7 @@ export default function Navbar({ onToggleSidebar }) {
                   {user.name || 'User'}
                 </div>
                 <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                  {ROLE_LABELS[role] || user.role}
+                  {t(ROLE_LABELS[role]) || ROLE_LABELS[role] || user.role}
                 </div>
               </div>
             </Link>
@@ -194,7 +363,7 @@ export default function Navbar({ onToggleSidebar }) {
               onClick={handleLogout}
               style={{ fontSize: 12 }}
             >
-              Sign Out
+              {t('logout') || 'Sign Out'}
             </button>
           </>
         ) : (

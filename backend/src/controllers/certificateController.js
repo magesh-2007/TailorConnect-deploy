@@ -51,3 +51,47 @@ export const downloadCertificate = async (req, res, next) => {
     next(err)
   }
 }
+
+export const verifyCertificate = async (req, res, next) => {
+  try {
+    const { code } = req.params
+    if (!code) {
+      return sendError(res, 'Certificate ID or verification code is required.', 400)
+    }
+
+    const cert = await Certificate.findOne({
+      $or: [
+        { certificateId: code },
+        { verificationCode: code },
+        { _id: /^[a-f\d]{24}$/i.test(code) ? code : null }
+      ]
+    })
+
+    if (!cert) {
+      return sendSuccess(res, 'Certificate verification result.', {
+        verified: false,
+        status: 'INVALID',
+        message: 'No valid certificate found matching the provided code.'
+      })
+    }
+
+    return sendSuccess(res, 'Certificate verified successfully.', {
+      verified: true,
+      status: 'VALID',
+      certificate: {
+        certificateId: cert.certificateId,
+        studentName: cert.studentName,
+        courseName: cert.courseName,
+        tailorName: cert.tailorName || 'Master Tailor',
+        shopName: cert.shopName || 'TailorConnect Academy',
+        completionDate: cert.completionDate,
+        duration: cert.duration || '15 Days',
+        grade: cert.grade || 'Certified Professional Distinction',
+        verificationCode: cert.verificationCode || cert.certificateId
+      }
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+

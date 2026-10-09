@@ -157,6 +157,59 @@ export default function CustomerQuotations() {
         </Link>
       </div>
 
+      {/* SIDE-BY-SIDE COMPARISON BADGES */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '16px', marginBottom: '24px' }}>
+        {quotations.map((q) => {
+          let badge = null
+          if (q.price === Math.min(...quotations.map(x => x.price))) {
+            badge = { label: '🏷️ Lowest Price', bg: '#EDFAF3', text: '#246040', border: '#A7E0C4' }
+          } else if (q.estimatedDays === Math.min(...quotations.map(x => x.estimatedDays))) {
+            badge = { label: '⚡ Fastest Delivery', bg: '#EEF6F8', text: '#1D4E57', border: '#A8D4DB' }
+          } else if (q.rating === Math.max(...quotations.map(x => x.rating))) {
+            badge = { label: '⭐ Highest Rated', bg: '#FDF6EC', text: '#7A5620', border: '#F0D09A' }
+          } else {
+            badge = { label: '💎 Best Value', bg: '#DDEBE7', text: '#0F5C5E', border: '#C8D5D2' }
+          }
+
+          return (
+            <div
+              key={q.id}
+              style={{
+                backgroundColor: '#FFFFFF',
+                borderRadius: '14px',
+                border: `2px solid ${badge.border}`,
+                padding: '20px',
+                boxShadow: '0 4px 12px rgba(15,92,94,0.06)'
+              }}
+            >
+              <div style={{ display: 'inline-block', backgroundColor: badge.bg, color: badge.text, padding: '4px 10px', borderRadius: '20px', fontSize: '12px', fontWeight: 700, marginBottom: '12px' }}>
+                {badge.label}
+              </div>
+              <h3 style={{ margin: '0 0 4px 0', fontSize: '16px', fontWeight: 700, color: '#0F5C5E' }}>
+                {q.shopName}
+              </h3>
+              <div style={{ fontSize: '13px', color: '#667085', marginBottom: '12px' }}>
+                by {q.tailor} • ⭐ {q.rating}
+              </div>
+              <div style={{ fontSize: '20px', fontWeight: 800, color: '#0F5C5E', marginBottom: '4px' }}>
+                ₹{q.price}
+              </div>
+              <div style={{ fontSize: '12px', color: '#667085', marginBottom: '16px' }}>
+                ⏱️ Delivery: <strong>{q.estimatedDays} Days</strong> ({q.deliveryDate})
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button size="sm" variant="primary" onClick={() => handleAccept(q)}>
+                  Accept & Pay
+                </Button>
+                <Button size="sm" variant="outline" onClick={() => setSelectedQuote(q)}>
+                  Details
+                </Button>
+              </div>
+            </div>
+          )
+        })}
+      </div>
+
       {/* FILTER TABS */}
       <div className="card" style={{ marginBottom: 20, padding: '12px 20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <div style={{ display: 'flex', gap: 8 }}>

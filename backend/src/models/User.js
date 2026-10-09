@@ -22,7 +22,14 @@ const userSchema = new mongoose.Schema(
     },
     isActive: { type: Boolean, default: true },
     isVerified: { type: Boolean, default: false },
-    googleId: { type: String, unique: true, sparse: true }
+    googleId: { type: String, unique: true, sparse: true },
+    // Real Email Verification using OTP
+    emailVerified: { type: Boolean, default: false },
+    emailVerifiedAt: { type: Date },
+    emailOtpHash: { type: String, select: false },
+    emailOtpExpiresAt: { type: Date, select: false },
+    emailOtpAttempts: { type: Number, default: 0, select: false },
+    emailOtpLastSentAt: { type: Date, select: false }
   },
   { timestamps: true }
 )
@@ -31,6 +38,7 @@ const userSchema = new mongoose.Schema(
 userSchema.virtual('profile_image').get(function () { return this.profileImage })
 userSchema.virtual('is_active').get(function () { return this.isActive })
 userSchema.virtual('is_verified').get(function () { return this.isVerified })
+userSchema.virtual('email_verified').get(function () { return this.emailVerified })
 userSchema.virtual('google_id').get(function () { return this.googleId })
 userSchema.virtual('created_at').get(function () { return this.createdAt })
 userSchema.virtual('updated_at').get(function () { return this.updatedAt })

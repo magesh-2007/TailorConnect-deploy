@@ -358,6 +358,8 @@ export const INITIAL_OFFERS_AND_COURSES = [
     registeredStudents: 12,
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&auto=format&fit=crop&q=80',
+    sampleVideoUrl: 'https://www.youtube.com/embed/3RCh2Tq8RN0',
+    sampleVideoTitle: 'Aari Needle Numbers 14 & 24 Handling & Chain Stitch Masterclass',
     requirements: 'Basic interest in hand stitching, Aari needle set (provided in class)',
     whatWillBeTaught: 'Needle angles, Zari thread lock, Stone chain fixing, Peacock motifs, Cutwork',
     whatWillBeReceived: 'Course Completion Certificate, Aari Toolkit, Printed Design Stencil Booklet',
@@ -386,6 +388,8 @@ export const INITIAL_OFFERS_AND_COURSES = [
     registeredStudents: 18,
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1610030469983-98e550d6193c?w=600&auto=format&fit=crop&q=80',
+    sampleVideoUrl: 'https://www.youtube.com/embed/3RCh2Tq8RN0',
+    sampleVideoTitle: 'Bridal Blouse Princess Cut Fitting & Margin Customization',
     requirements: 'Customer to bring or courier blouse bit fabric',
     whatWillBeTaught: 'Custom tailored bridal blouse with Princess cut or Katori cut',
     whatWillBeReceived: 'Ready-to-wear tailored blouse with double inner seam lining',
@@ -414,6 +418,8 @@ export const INITIAL_OFFERS_AND_COURSES = [
     registeredStudents: 21,
     status: 'Active',
     image: 'https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=600&auto=format&fit=crop&q=80',
+    sampleVideoUrl: 'https://www.youtube.com/embed/3RCh2Tq8RN0',
+    sampleVideoTitle: 'Precision Body Measurement & Paper Pattern Drafting Demonstration',
     requirements: 'Measuring tape, drafting paper, tailoring shears',
     whatWillBeTaught: 'Body measurement charts, pattern grading, sleeve drafting, neck canvas cutting',
     whatWillBeReceived: 'Verified Certificate of Completion, PDF Pattern Master Guide',
@@ -442,6 +448,8 @@ export const INITIAL_OFFERS_AND_COURSES = [
     registeredStudents: 15,
     status: 'Closed',
     image: 'https://images.unsplash.com/photo-1583391733956-3750e0ff4e8b?w=600&auto=format&fit=crop&q=80',
+    sampleVideoUrl: 'https://www.youtube.com/embed/3RCh2Tq8RN0',
+    sampleVideoTitle: 'South Indian Maggam Frame Setup & Zardosi Coil Winding',
     requirements: 'Prior experience in basic hand embroidery',
     whatWillBeTaught: 'Maggam cot mounting, Antique zardosi coil work, Gota patti borders, Sequin locking',
     whatWillBeReceived: 'Heritage Certificate of Maggam Mastery, Raw materials kit',
@@ -1211,6 +1219,7 @@ export const registerForCourse = (offerId, studentUser) => {
 
   offer.registeredUserIds.push(studentUser.id)
   offer.registeredStudents += 1
+  offer.totalEarnings = (offer.totalEarnings || 0) + (offer.price || 0)
 
   if (offer.registeredStudents >= offer.maxCapacity) {
     offer.status = 'Closed'
@@ -1222,16 +1231,16 @@ export const registerForCourse = (offerId, studentUser) => {
   // Add Notification for Student
   addNotification({
     userId: studentUser.id,
-    title: 'Course Registration Confirmed',
-    message: `You have successfully enrolled in "${offer.name}". Begins on ${offer.startDate}.`,
+    title: 'Course Registration & Payment Confirmed 🎓',
+    message: `You have successfully enrolled in "${offer.name}" for ₹${offer.price || 0}. Full video lesson access is unlocked!`,
     type: 'course'
   })
 
-  // Add Notification for Tailor
+  // Add Notification for Tailor (Revenue Credited)
   addNotification({
     userId: offer.tailorId,
-    title: 'New Course Registration',
-    message: `${studentUser.name} registered for "${offer.name}". Current count: ${offer.registeredStudents}/${offer.maxCapacity}.`,
+    title: 'New Student Enrollment & Payment Credited 💰',
+    message: `${studentUser.name} registered for "${offer.name}". ₹${offer.price || 0} credited to your account! Current count: ${offer.registeredStudents}/${offer.maxCapacity}.`,
     type: 'course'
   })
 

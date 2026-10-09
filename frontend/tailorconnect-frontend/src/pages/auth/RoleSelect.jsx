@@ -62,14 +62,15 @@ export default function RoleSelect() {
   const handleQuickLogin = async (r) => {
     setLoadingRole(r.role)
     setError('')
-    const result = await login(r.role, {
+    const result = await login({
       identifier: r.demoEmail,
       password: r.demoPass
     })
     setLoadingRole(null)
 
     if (result.success) {
-      navigate(`/${r.role}/dashboard`)
+      const dbRole = (result.user?.role || r.role).toLowerCase()
+      navigate(`/${dbRole}/dashboard`)
     } else {
       setError(result.error || 'Failed to log in.')
     }
@@ -97,14 +98,15 @@ export default function RoleSelect() {
 
     setLoadingRole(selectedRole)
     setError('')
-    const result = await login(selectedRole, {
+    const result = await login({
       identifier: form.identifier,
       password: form.password
     })
     setLoadingRole(null)
 
     if (result.success) {
-      navigate(`/${selectedRole}/dashboard`)
+      const dbRole = (result.user?.role || selectedRole).toLowerCase()
+      navigate(`/${dbRole}/dashboard`)
     } else {
       setError(result.error || 'Invalid credentials. Please verify your details.')
     }

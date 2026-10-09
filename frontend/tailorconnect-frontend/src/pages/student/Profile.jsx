@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import * as storage from '../../services/storageService'
 import Button from '../../components/Button'
+import { downloadReceiptPdf, printReceiptFormatted } from '../../utils/receiptPdf'
 
 export default function StudentProfile() {
   const { user, updateProfile } = useAuth()
@@ -361,7 +362,8 @@ export default function StudentProfile() {
 
             <div className="no-print" style={{ display: 'flex', gap: 10, justifyContent: 'flex-end', marginTop: 20 }}>
               <Button variant="outline" onClick={() => setSelectedReceipt(null)}>Close</Button>
-              <Button onClick={() => window.print()}>🖨️ Print / Download PDF</Button>
+              <Button onClick={() => downloadReceiptPdf(selectedReceipt)}>📥 Download PDF</Button>
+              <Button onClick={() => printReceiptFormatted(selectedReceipt)}>🖨️ Print</Button>
             </div>
           </div>
         </div>

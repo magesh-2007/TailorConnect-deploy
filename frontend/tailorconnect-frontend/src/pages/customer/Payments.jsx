@@ -4,6 +4,7 @@ import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
 import * as storage from '../../services/storageService'
 import Button from '../../components/Button'
+import ReceiptModal from '../../components/ReceiptModal'
 
 export default function CustomerPayments() {
   const { user } = useAuth()
@@ -162,67 +163,10 @@ export default function CustomerPayments() {
       </div>
 
       {/* RECEIPT MODAL */}
-      {selectedReceipt && (
-        <div style={{
-          position: 'fixed',
-          inset: 0,
-          background: 'rgba(0,0,0,0.5)',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          zIndex: 100,
-          padding: 20
-        }}>
-          <div className="card" style={{ maxWidth: 480, width: '100%', padding: 24 }}>
-            <div className="flex-between" style={{ marginBottom: 16 }}>
-              <h2 style={{ fontSize: 18, color: 'var(--primary-dark)', margin: 0 }}>Official Payment Receipt</h2>
-              <button 
-                type="button" 
-                onClick={() => setSelectedReceipt(null)}
-                style={{ background: 'none', border: 'none', fontSize: 20, cursor: 'pointer' }}
-              >
-                ✕
-              </button>
-            </div>
-
-            <div style={{ background: 'var(--bg-page)', padding: 16, borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, marginBottom: 16 }}>
-              <div className="flex-between" style={{ padding: '4px 0' }}>
-                <span><strong>Receipt ID:</strong></span>
-                <span style={{ color: 'var(--primary)', fontWeight: 700 }}>{selectedReceipt.id}</span>
-              </div>
-              <div className="flex-between" style={{ padding: '4px 0' }}>
-                <span><strong>Transaction ID:</strong></span>
-                <span style={{ fontSize: 11 }}>{selectedReceipt.transactionId}</span>
-              </div>
-              <div className="flex-between" style={{ padding: '4px 0' }}>
-                <span><strong>Service / Order:</strong></span>
-                <span>{selectedReceipt.title}</span>
-              </div>
-              <div className="flex-between" style={{ padding: '4px 0' }}>
-                <span><strong>Tailor Boutique:</strong></span>
-                <span>{selectedReceipt.tailorName}</span>
-              </div>
-              <div className="flex-between" style={{ padding: '4px 0' }}>
-                <span><strong>Payment Method:</strong></span>
-                <span>{selectedReceipt.method}</span>
-              </div>
-              <div className="flex-between" style={{ padding: '4px 0' }}>
-                <span><strong>Date & Time:</strong></span>
-                <span>{selectedReceipt.date}</span>
-              </div>
-              <div className="flex-between" style={{ borderTop: '2px solid var(--primary)', marginTop: 8, paddingTop: 8, fontSize: 15, fontWeight: 800, color: 'var(--primary-dark)' }}>
-                <span>Total Paid:</span>
-                <span>₹{selectedReceipt.amount}.00</span>
-              </div>
-            </div>
-
-            <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
-              <Button variant="secondary" onClick={() => setSelectedReceipt(null)}>Close</Button>
-              <Button variant="primary" onClick={() => window.print()}>🖨️ Print / Download PDF</Button>
-            </div>
-          </div>
-        </div>
-      )}
+      <ReceiptModal
+        receipt={selectedReceipt}
+        onClose={() => setSelectedReceipt(null)}
+      />
     </DashboardLayout>
   )
 }

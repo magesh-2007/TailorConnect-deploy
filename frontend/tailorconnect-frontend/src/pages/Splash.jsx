@@ -11,25 +11,34 @@ const ROLE_DASHBOARD = {
 }
 
 export default function Splash() {
-  const { user, loading } = useAuth()
+  const { user, loading, switchRole } = useAuth()
   const navigate = useNavigate()
   const [fadeOut, setFadeOut] = useState(false)
 
   useEffect(() => {
     if (loading) return
-    const timer = setTimeout(() => {
+    const timer = setTimeout(async () => {
       setFadeOut(true)
-      setTimeout(() => {
+      setTimeout(async () => {
+        // If user is currently Admin, or no user is logged in, open Customer Dashboard
+        if (!user || user.role?.toLowerCase() === 'admin') {
+          if (switchRole) {
+            await switchRole('customer')
+          }
+          navigate('/customer/dashboard', { replace: true })
+          return
+        }
+
         if (user?.role) {
           const dest = ROLE_DASHBOARD[user.role.toLowerCase()]
-          navigate(dest || '/home', { replace: true })
+          navigate(dest || '/customer/dashboard', { replace: true })
         } else {
-          navigate('/home', { replace: true })
+          navigate('/customer/dashboard', { replace: true })
         }
-      }, 500)
-    }, 2200)
+      }, 400)
+    }, 1200)
     return () => clearTimeout(timer)
-  }, [loading, user, navigate])
+  }, [loading, user, navigate, switchRole])
 
   return (
     <div style={{

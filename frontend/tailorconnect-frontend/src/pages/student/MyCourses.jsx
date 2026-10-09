@@ -1,43 +1,72 @@
 import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../layouts/DashboardLayout'
+import { useAuth } from '../../context/AuthContext'
+import * as storage from '../../services/storageService'
 import Button from '../../components/Button'
 import ProgressBar from '../../components/ProgressBar'
 
 export default function StudentMyCourses() {
+  const { user } = useAuth()
   const [courses, setCourses] = useState([])
 
+  const loadData = () => {
+    // 1. Get offers/courses from storage that the student enrolled in
+    const offers = storage.getOffers ? storage.getOffers() : []
+    const enrolledOffers = offers.filter(
+      (o) => (o.type === 'Course' || o.targetAudience === 'Student') && o.registeredUserIds?.includes(user?.id)
+    ).map((o) => ({
+      id: o.id,
+      name: o.name,
+      trainerName: o.trainerName,
+      duration: `${o.durationDays} Days`,
+      progress: 50,
+      lessonsCount: 14,
+      completedLessons: 7,
+      image: o.image
+    }))
+
+    // 2. Default seeded enrolled courses
+    const defaultEnrolled = [
+      {
+        id: 'CRS-1',
+        name: 'Basic Tailoring & Pattern Making',
+        trainerName: 'Lakshmi Devi',
+        duration: '15 Days',
+        progress: 75,
+        lessonsCount: 14,
+        completedLessons: 10,
+        image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&auto=format&fit=crop&q=80'
+      },
+      {
+        id: 'CRS-2',
+        name: 'Aari Embroidery & Maggam Work Masterclass',
+        trainerName: 'Lakshmi Devi',
+        duration: '20 Days',
+        progress: 43,
+        lessonsCount: 7,
+        completedLessons: 3,
+        image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&auto=format&fit=crop&q=80'
+      }
+    ]
+
+    // Deduplicate by id
+    const combined = [...enrolledOffers]
+    defaultEnrolled.forEach((d) => {
+      if (!combined.some((c) => c.id === d.id)) {
+        combined.push(d)
+      }
+    })
+
+    setCourses(combined)
+  }
+
   useEffect(() => {
-    const raw = localStorage.getItem('tc_tailor_courses')
-    let courseList = []
-    if (raw) {
-      courseList = JSON.parse(raw)
-    } else {
-      courseList = [
-        {
-          id: 'CRS-1',
-          name: 'Basic Tailoring & Pattern Making',
-          trainerName: 'Lakshmi Devi',
-          duration: '15 Days',
-          progress: 75,
-          lessonsCount: 14,
-          completedLessons: 10,
-          image: 'https://images.unsplash.com/photo-1558769132-cb1aea458c5e?w=600&auto=format&fit=crop&q=80'
-        },
-        {
-          id: 'CRS-2',
-          name: 'Aari Embroidery & Maggam Work Masterclass',
-          trainerName: 'Lakshmi Devi',
-          duration: '20 Days',
-          progress: 40,
-          lessonsCount: 16,
-          completedLessons: 6,
-          image: 'https://images.unsplash.com/photo-1617627143750-d86bc21e42bb?w=600&auto=format&fit=crop&q=80'
-        }
-      ]
-    }
-    setCourses(courseList)
-  }, [])
+    loadData()
+    const handleDataChange = () => loadData()
+    window.addEventListener('tc_data_changed', handleDataChange)
+    return () => window.removeEventListener('tc_data_changed', handleDataChange)
+  }, [user])
 
   return (
     <DashboardLayout role="student">

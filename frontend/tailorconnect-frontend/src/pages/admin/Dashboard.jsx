@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../layouts/DashboardLayout'
 import api from '../../services/api'
+import { useLanguage } from '../../context/LanguageContext'
+import { useAuth } from '../../context/AuthContext'
 
 // ── Tiny helpers ──────────────────────────────────────────────────────────────
 const StatCard = ({ label, value, sub, color = 'var(--primary)', icon }) => (
@@ -41,6 +43,8 @@ const orderStatusColor = (status = '') => {
 }
 
 export default function AdminDashboard() {
+  const { t } = useLanguage()
+  const { switchRole } = useAuth()
   const [stats, setStats] = useState(null)
   const [recentUsers, setRecentUsers] = useState([])
   const [recentOrders, setRecentOrders] = useState([])
@@ -66,10 +70,10 @@ export default function AdminDashboard() {
 
   // ── Bar chart data from real stats ───────────────────────────────────────────
   const roleBreakdown = stats ? [
-    { role: 'Customers', count: stats.totalCustomers, color: 'var(--primary)' },
-    { role: 'Tailors',   count: stats.totalTailors,   color: '#9C27B0' },
-    { role: 'Students',  count: stats.totalStudents,  color: '#0288D1' },
-    { role: 'Employees', count: stats.totalEmployees, color: '#F57C00' }
+    { role: t('Customers'), count: stats.totalCustomers, color: 'var(--primary)' },
+    { role: t('Tailors'),   count: stats.totalTailors,   color: '#9C27B0' },
+    { role: t('Students'),  count: stats.totalStudents,  color: '#0288D1' },
+    { role: t('Employees'), count: stats.totalEmployees, color: '#F57C00' }
   ] : []
 
   const maxRole = Math.max(...roleBreakdown.map(r => r.count), 1)
@@ -89,21 +93,68 @@ export default function AdminDashboard() {
     <DashboardLayout role="admin">
       <div className="page-header">
         <div>
-          <h1>Platform Governance &amp; Analytics Console</h1>
-          <p>Real-time data from MongoDB · All statistics pulled live from the backend.</p>
+          <h1>{t('Platform Governance & Analytics Console')}</h1>
+          <p>{t('Real-time data from MongoDB · All statistics pulled live from the backend.')}</p>
         </div>
         <div className="page-actions">
           <Link to="/admin/tailor-verification">
             <button className="btn btn-primary" style={{ fontSize: 13 }}>
-              ✅ Verify Tailors ({stats?.pendingVerification ?? 0})
+              ✅ {t('Verify Tailors')} ({stats?.pendingVerification ?? 0})
             </button>
           </Link>
           <Link to="/admin/orders">
             <button className="btn btn-outline" style={{ fontSize: 13 }}>
-              📦 View Orders ({stats?.totalOrders ?? 0})
+              📦 {t('View Orders')} ({stats?.totalOrders ?? 0})
             </button>
           </Link>
         </div>
+      </div>
+
+      {/* ── Switch to Customer Banner ── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #E0F2FE 0%, #BAE6FD 100%)',
+        border: '1.5px solid #38BDF8',
+        borderRadius: 12,
+        padding: '14px 20px',
+        marginBottom: 20,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 12
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 26 }}>👗</span>
+          <div>
+            <strong style={{ color: '#0369A1', fontSize: 14 }}>
+              Looking for the Customer Portal?
+            </strong>
+            <p style={{ margin: 0, fontSize: 12.5, color: '#0284C7' }}>
+              Switch directly to Customer Dashboard to find tailors, view tailor profiles, and book stitching services.
+            </p>
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => switchRole('customer')}
+          style={{
+            padding: '9px 18px',
+            backgroundColor: '#0284C7',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: 8,
+            fontWeight: 700,
+            fontSize: 13,
+            cursor: 'pointer',
+            boxShadow: '0 2px 8px rgba(2,132,199,0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6
+          }}
+        >
+          <span>👤</span>
+          <span>Open Customer Dashboard →</span>
+        </button>
       </div>
 
       {error && (
@@ -114,17 +165,17 @@ export default function AdminDashboard() {
 
       {/* ── PRIMARY STATS GRID ───────────────────────────────────────────────── */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: 16, marginBottom: 28 }}>
-        <StatCard label="Total Users"          value={stats?.totalUsers}           sub="All platform accounts"       color="var(--primary)"  icon="👥" />
-        <StatCard label="Customers"            value={stats?.totalCustomers}       sub="Registered customers"        color="#15803d"         icon="👗" />
-        <StatCard label="Tailors"              value={stats?.totalTailors}         sub="Registered tailors"          color="#9C27B0"         icon="🧵" />
-        <StatCard label="Students"             value={stats?.totalStudents}        sub="Learning platform"           color="#0288D1"         icon="📚" />
-        <StatCard label="Employees"            value={stats?.totalEmployees}       sub="Staff accounts"              color="#F57C00"         icon="🏢" />
-        <StatCard label="Verified Tailors"     value={stats?.verifiedTailors}      sub="Accredited boutiques"        color="var(--success)"  icon="✅" />
-        <StatCard label="Pending Verification" value={stats?.pendingVerification}  sub="Awaiting approval"           color="var(--warning)"  icon="⏳" />
-        <StatCard label="Total Orders"         value={stats?.totalOrders}          sub="All orders placed"           color="var(--primary)"  icon="📦" />
-        <StatCard label="Active Orders"        value={stats?.activeOrders}         sub="In production queue"         color="var(--text-main)"icon="⚡" />
-        <StatCard label="Completed Orders"     value={stats?.completedOrders}      sub="Successfully delivered"      color="var(--success)"  icon="🎉" />
-        <StatCard label="Total Courses"        value={stats?.totalCourses}         sub="Learning catalogue"          color="#1d4ed8"         icon="🎓" />
+        <StatCard label={t('Total Users')}          value={stats?.totalUsers}           sub={t('All platform accounts')}       color="var(--primary)"  icon="👥" />
+        <StatCard label={t('Customers')}            value={stats?.totalCustomers}       sub={t('Registered customers')}        color="#15803d"         icon="👗" />
+        <StatCard label={t('Tailors')}              value={stats?.totalTailors}         sub={t('Registered tailors')}          color="#9C27B0"         icon="🧵" />
+        <StatCard label={t('Students')}             value={stats?.totalStudents}        sub={t('Learning platform')}           color="#0288D1"         icon="📚" />
+        <StatCard label={t('Employees')}            value={stats?.totalEmployees}       sub={t('Staff accounts')}              color="#F57C00"         icon="🏢" />
+        <StatCard label={t('Verified Tailors')}     value={stats?.verifiedTailors}      sub={t('Accredited boutiques')}        color="var(--success)"  icon="✅" />
+        <StatCard label={t('Pending Verification')} value={stats?.pendingVerification}  sub={t('Awaiting approval')}           color="var(--warning)"  icon="⏳" />
+        <StatCard label={t('Total Orders')}         value={stats?.totalOrders}          sub={t('All orders placed')}           color="var(--primary)"  icon="📦" />
+        <StatCard label={t('Active Orders')}        value={stats?.activeOrders}         sub={t('In production queue')}         color="var(--text-main)"icon="⚡" />
+        <StatCard label={t('Completed Orders')}     value={stats?.completedOrders}      sub={t('Successfully delivered')}      color="var(--success)"  icon="🎉" />
+        <StatCard label={t('Total Courses')}        value={stats?.totalCourses}         sub={t('Learning catalogue')}          color="#1d4ed8"         icon="🎓" />
       </div>
 
       {/* ── CHARTS ROW ───────────────────────────────────────────────────────── */}
@@ -134,11 +185,11 @@ export default function AdminDashboard() {
         <div className="card" style={{ padding: 22 }}>
           <div className="flex-between" style={{ marginBottom: 14 }}>
             <div>
-              <h3 style={{ fontSize: 16, margin: 0 }}>👥 User Distribution by Role</h3>
-              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Live counts from MongoDB</span>
+              <h3 style={{ fontSize: 16, margin: 0 }}>👥 {t('User Distribution by Role')}</h3>
+              <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t('Live counts from MongoDB')}</span>
             </div>
             <Link to="/admin/users" style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600 }}>
-              All Users →
+              {t('All Users')} →
             </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 14, marginTop: 8 }}>
@@ -165,15 +216,15 @@ export default function AdminDashboard() {
         {/* Order Status Overview */}
         <div className="card" style={{ padding: 22 }}>
           <div style={{ marginBottom: 14 }}>
-            <h3 style={{ fontSize: 16, margin: 0 }}>📦 Order Status Overview</h3>
-            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Real-time order pipeline</span>
+            <h3 style={{ fontSize: 16, margin: 0 }}>📦 {t('Order Status Overview')}</h3>
+            <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{t('Real-time order pipeline')}</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             {[
-              { label: 'Total Orders',   value: stats?.totalOrders,     color: 'var(--primary)',  icon: '📦' },
-              { label: 'Active / WIP',   value: stats?.activeOrders,    color: 'var(--warning)',  icon: '⚡' },
-              { label: 'Completed',      value: stats?.completedOrders, color: 'var(--success)',  icon: '✅' },
-              { label: 'Courses',        value: stats?.totalCourses,    color: '#1d4ed8',         icon: '🎓' }
+              { label: t('Total Orders'),   value: stats?.totalOrders,     color: 'var(--primary)',  icon: '📦' },
+              { label: t('Active / WIP'),   value: stats?.activeOrders,    color: 'var(--warning)',  icon: '⚡' },
+              { label: t('Completed'),      value: stats?.completedOrders, color: 'var(--success)',  icon: '✅' },
+              { label: t('Courses'),        value: stats?.totalCourses,    color: '#1d4ed8',         icon: '🎓' }
             ].map(item => (
               <div key={item.label} style={{
                 background: 'var(--bg-subtle)',
@@ -194,13 +245,13 @@ export default function AdminDashboard() {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(440px, 1fr))', gap: 20, marginBottom: 28 }}>
         <div className="card" style={{ padding: 22 }}>
           <div className="flex-between" style={{ marginBottom: 16 }}>
-            <h3 style={{ fontSize: 16, margin: 0 }}>🆕 Recent Registrations</h3>
+            <h3 style={{ fontSize: 16, margin: 0 }}>🆕 {t('Recent Users')}</h3>
             <Link to="/admin/users" style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600 }}>
-              All Users →
+              {t('All Users')} →
             </Link>
           </div>
           {recentUsers.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No users found.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t('No users found.') || 'No users found.'}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {recentUsers.map(u => (
@@ -226,13 +277,13 @@ export default function AdminDashboard() {
         {/* ── RECENT ORDERS ──────────────────────────────────────────────────── */}
         <div className="card" style={{ padding: 22 }}>
           <div className="flex-between" style={{ marginBottom: 16 }}>
-            <h3 style={{ fontSize: 16, margin: 0 }}>🧾 Recent Orders</h3>
+            <h3 style={{ fontSize: 16, margin: 0 }}>🧾 {t('Recent Tailoring Orders')}</h3>
             <Link to="/admin/orders" style={{ fontSize: 12, color: 'var(--primary)', fontWeight: 600 }}>
-              All Orders →
+              {t('Orders')} →
             </Link>
           </div>
           {recentOrders.length === 0 ? (
-            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>No orders found.</p>
+            <p style={{ color: 'var(--text-muted)', fontSize: 13 }}>{t('No orders found.') || 'No orders found.'}</p>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
               {recentOrders.map(o => (

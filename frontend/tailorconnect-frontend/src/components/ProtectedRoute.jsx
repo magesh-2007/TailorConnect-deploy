@@ -142,13 +142,16 @@ export default function ProtectedRoute({ role, children }) {
   }
 
   if (role && user.role?.toLowerCase() !== role?.toLowerCase()) {
+    // Platform administrators have universal access to view and use all portals
+    if (user.role?.toLowerCase() === 'admin') {
+      return children
+    }
+
     // Authenticated but wrong role
     if (isAdminRoute) {
-      // Show access denied — do NOT silently redirect to their dashboard
-      // This makes the unauthorized access visible and auditable
       return <UnauthorizedAccess user={user} />
     }
-    // For non-admin routes, redirect to their actual dashboard
+    // For other non-admin routes, redirect to their actual dashboard
     return <Navigate to={`/${user.role?.toLowerCase()}/dashboard`} replace />
   }
 

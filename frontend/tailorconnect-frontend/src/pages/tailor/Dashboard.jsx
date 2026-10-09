@@ -2,11 +2,13 @@ import React, { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import * as storage from '../../services/storageService'
 import Button from '../../components/Button'
 
 export default function TailorDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const [orders, setOrders] = useState([])
   const [appointments, setAppointments] = useState([])
   const [capacity, setCapacity] = useState({
@@ -114,62 +116,62 @@ export default function TailorDashboard() {
       {/* PAGE HEADER */}
       <div className="page-header">
         <div>
-          <h1>Tailor Studio Dashboard</h1>
-          <p>{user?.shopName || 'Lakshmi Stitches & Bridal Studio'} • Production & Studio Workload Console</p>
+          <h1>{t('Tailor Studio')} {t('Dashboard')}</h1>
+          <p>{user?.shopName || 'Lakshmi Stitches & Bridal Studio'} • {t('Production & Studio Workload Console') || 'Production Console'}</p>
         </div>
         <div className="page-actions">
           <Link to="/tailor/progress">
-            <Button variant="primary">⚡ Production Pipeline</Button>
+            <Button variant="primary">⚡ {t('Stitching Progress') || 'Production Pipeline'}</Button>
           </Link>
           <Link to="/tailor/quotations">
-            <Button variant="outline">🏷️ Order Requests ({pendingRequestsCount})</Button>
+            <Button variant="outline">🏷️ {t('Quotations')} ({pendingRequestsCount})</Button>
           </Link>
           <Link to="/tailor/services">
-            <Button variant="secondary">✂️ My Services</Button>
+            <Button variant="secondary">✂️ {t('My Services')}</Button>
           </Link>
         </div>
       </div>
 
-      {/* 4 BUSINESS METRICS (EXACT SPECIFICATION: Customized Dress Orders, Urgent Orders, Services Offered, Courses Offered) */}
+      {/* 4 BUSINESS METRICS */}
       <div className="stat-grid">
         <div className="stat-card">
-          <h3>Customized Dress Orders</h3>
+          <h3>{t('Customized Dress Orders') || t('Orders')}</h3>
           <div className="stat-value" style={{ color: 'var(--primary)' }}>
             {customizedDressOrders}
           </div>
-          <span className="stat-subtitle">Active bespoke garments in workflow</span>
+          <span className="stat-subtitle">{t('Active bespoke garments in workflow') || 'Active bespoke garments'}</span>
         </div>
 
         <div className="stat-card">
-          <h3>Urgent Orders</h3>
+          <h3>{t('Urgent Orders')}</h3>
           <div className="stat-value" style={{ color: 'var(--danger)' }}>
             {urgentOrdersCount}
           </div>
-          <span className="stat-subtitle">Expedited 48-72h turnaround priority</span>
+          <span className="stat-subtitle">{t('Expedited 48-72h turnaround priority') || 'Expedited priority'}</span>
         </div>
 
         <div className="stat-card">
-          <h3>Services Offered</h3>
+          <h3>{t('Services Offered')}</h3>
           <div className="stat-value" style={{ color: 'var(--primary-dark)' }}>
             {servicesOfferedCount}
           </div>
-          <span className="stat-subtitle">Active boutique tailoring catalogs</span>
+          <span className="stat-subtitle">{t('Active boutique tailoring catalogs') || 'Active catalogs'}</span>
         </div>
 
         <div className="stat-card">
-          <h3>Courses Offered</h3>
+          <h3>{t('Courses Offered')}</h3>
           <div className="stat-value" style={{ color: 'var(--info)' }}>
             {coursesOfferedCount}
           </div>
-          <span className="stat-subtitle">Masterclasses published to academy</span>
+          <span className="stat-subtitle">{t('Masterclasses published to academy') || 'Published masterclasses'}</span>
         </div>
       </div>
 
-      {/* 4 OPERATIONAL HIGHLIGHTS (Today's Orders, Pending Requests, Upcoming Deliveries, Today's Appointments) */}
+      {/* 4 OPERATIONAL HIGHLIGHTS */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 16, marginBottom: 28 }}>
         <div className="card" style={{ padding: '14px 18px', borderLeft: '4px solid var(--primary)', background: '#FFFFFF' }}>
-          <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block' }}>Today's Orders</span>
-          <strong style={{ fontSize: 17, color: 'var(--primary-dark)' }}>{todaysOrdersCount} in Active Production</strong>
+          <span style={{ fontSize: 12, color: 'var(--text-secondary)', display: 'block' }}>{t("Today's Orders")}</span>
+          <strong style={{ fontSize: 17, color: 'var(--primary-dark)' }}>{todaysOrdersCount} {t('Active / WIP') || 'in Active Production'}</strong>
         </div>
 
         <div className="card" style={{ padding: '14px 18px', borderLeft: '4px solid var(--warning)', background: '#FFFFFF' }}>

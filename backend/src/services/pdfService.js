@@ -86,12 +86,13 @@ export const generateReceiptPdf = (payment, res) => {
 
 /**
  * Generate official landscape certificate of completion PDF and stream to response
+ * Designed to match official TailorConnect certificate layout
  */
 export const generateCertificatePdf = (cert, res) => {
   const doc = new PDFDocument({
     layout: 'landscape',
     size: 'A4',
-    margin: 40
+    margin: 30
   })
 
   res.setHeader('Content-Type', 'application/pdf')
@@ -102,68 +103,143 @@ export const generateCertificatePdf = (cert, res) => {
 
   doc.pipe(res)
 
-  const pageWidth = 841.89
-  const pageHeight = 595.28
+  const W = 841.89
+  const H = 595.28
 
-  // Outer border & background
-  doc.rect(20, 20, pageWidth - 40, pageHeight - 40).lineWidth(4).strokeColor('#E91E63').stroke()
-  doc.rect(26, 26, pageWidth - 52, pageHeight - 52).lineWidth(1).strokeColor('#C2185B').stroke()
+  // 1. Parchment Background
+  doc.rect(0, 0, W, H).fill('#FAF7F2')
 
-  // Header
-  doc.fillColor('#C2185B').font('Helvetica-Bold').fontSize(14)
-  doc.text('TAILORCONNECT ACADEMY OF FASHION & EMBROIDERY', 0, 70, { align: 'center' })
+  // 2. Corner Navy Polygons (Top-Left & Bottom-Right)
+  doc.polygon([0, 0], [120, 0], [0, 120]).fill('#0F172A')
+  doc.polygon([0, 0], [130, 0], [0, 130]).strokeColor('#C5A059').lineWidth(2).stroke()
 
-  doc.fillColor('#212121').font('Helvetica-Bold').fontSize(28)
-  doc.text('CERTIFICATE OF ACHIEVEMENT', 0, 105, { align: 'center' })
+  doc.polygon([W, H], [W - 120, H], [W, H - 120]).fill('#0F172A')
+  doc.polygon([W, H], [W - 130, H], [W, H - 130]).strokeColor('#C5A059').lineWidth(2).stroke()
 
-  doc.fillColor('#757575').font('Helvetica').fontSize(12)
-  doc.text('THIS IS PROUDLY PRESENTED TO', 0, 155, { align: 'center' })
+  // 3. Double Gold Border
+  doc.rect(25, 25, W - 50, H - 50).lineWidth(3).strokeColor('#C5A059').stroke()
+  doc.rect(32, 32, W - 64, H - 64).lineWidth(1).strokeColor('#D4AF37').stroke()
 
-  // Student Name
-  doc.fillColor('#E91E63').font('Helvetica-Bold').fontSize(26)
-  doc.text(cert.studentName.toUpperCase(), 0, 185, { align: 'center' })
-  doc.moveTo(220, 220).lineTo(620, 220).strokeColor('#E91E63').lineWidth(1.5).stroke()
+  // 4. Header: Brand Logo & Title
+  doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(22)
+  doc.text('TailorConnect', 0, 48, { align: 'center' })
+  doc.fillColor('#C5A059').font('Helvetica-Bold').fontSize(22).text('Connect', W / 2 + 35, 48)
 
-  // Description
-  doc.fillColor('#424242').font('Helvetica').fontSize(13)
-  doc.text('for successfully completing the rigorous masterclass and practical needlework evaluation in', 0, 240, { align: 'center' })
+  doc.fillColor('#666666').font('Helvetica').fontSize(9)
+  doc.text('Custom Dresses | Learn Tailoring | Build Your Fashion Future', 0, 74, { align: 'center' })
 
-  doc.fillColor('#1A237E').font('Helvetica-Bold').fontSize(18)
-  doc.text(cert.courseName, 0, 270, { align: 'center' })
+  // Top Right Cursive Slogan
+  doc.fillColor('#C5A059').font('Helvetica-Oblique').fontSize(11)
+  doc.text('Stitching Skills Building Dreams ♡', W - 260, 48, { width: 220, align: 'right' })
 
-  doc.fillColor('#616161').font('Helvetica').fontSize(12)
-  doc.text(`Course Duration: ${cert.duration || '15 Days'} | Grade Awarded: ${cert.grade || 'Exemplary with Distinction'}`, 0, 310, { align: 'center' })
+  // 5. Left Ribbon Medal / Certified Seal
+  const cx = 110
+  const cy = 180
+  doc.circle(cx, cy, 42).fillColor('#C5A059').fill()
+  doc.circle(cx, cy, 36).fillColor('#0F172A').fill()
+  doc.fillColor('#FFFFFF').font('Helvetica-Bold').fontSize(8)
+  doc.text('CERTIFIED', cx - 30, cy - 16, { width: 60, align: 'center' })
+  doc.text('TAILORING', cx - 30, cy - 4, { width: 60, align: 'center' })
+  doc.text('PROFESSIONAL', cx - 35, cy + 8, { width: 70, align: 'center' })
 
-  // Signatures
-  const sigY = 410
-  // Instructor
-  doc.moveTo(100, sigY).lineTo(300, sigY).strokeColor('#9E9E9E').lineWidth(1).stroke()
-  doc.fillColor('#212121').font('Helvetica-Bold').fontSize(11)
-  doc.text(cert.tailorName || 'Master Instructor', 100, sigY + 8, { width: 200, align: 'center' })
-  doc.fillColor('#757575').font('Helvetica').fontSize(9)
-  doc.text(cert.shopName || 'Studio Master Tailor', 100, sigY + 22, { width: 200, align: 'center' })
+  // 6. Top Right Verification Box
+  const boxX = W - 240
+  const boxY = 110
+  doc.rect(boxX, boxY, 200, 115).fillColor('#FFFFFF').fillAndStroke('#C5A059')
+  doc.fillColor('#0F172A').font('Helvetica').fontSize(8.5)
 
-  // Academy Seal / Badge in Center
-  doc.circle(pageWidth / 2, sigY - 15, 36).fillColor('#FCE4EC').fill().strokeColor('#E91E63').lineWidth(2).stroke()
-  doc.fillColor('#E91E63').font('Helvetica-Bold').fontSize(10)
-  doc.text('VERIFIED', pageWidth / 2 - 26, sigY - 24, { width: 52, align: 'center' })
-  doc.fontSize(8).text('TC-ACADEMY', pageWidth / 2 - 30, sigY - 10, { width: 60, align: 'center' })
+  doc.text(`Certificate ID`, boxX + 10, boxY + 12)
+  doc.font('Helvetica-Bold').text(`:  ${cert.certificateId || cert.id}`, boxX + 85, boxY + 12)
 
-  // Director
-  doc.moveTo(pageWidth - 300, sigY).lineTo(pageWidth - 100, sigY).strokeColor('#9E9E9E').lineWidth(1).stroke()
-  doc.fillColor('#212121').font('Helvetica-Bold').fontSize(11)
-  doc.text('Director of Certification', pageWidth - 300, sigY + 8, { width: 200, align: 'center' })
-  doc.fillColor('#757575').font('Helvetica').fontSize(9)
-  doc.text('TailorConnect Governance Board', pageWidth - 300, sigY + 22, { width: 200, align: 'center' })
+  doc.font('Helvetica').text(`Verification Code`, boxX + 10, boxY + 28)
+  doc.font('Helvetica-Bold').text(`:  ${cert.verificationCode || 'TC-7F3K9D2A'}`, boxX + 85, boxY + 28)
 
-  // Bottom verification code
-  doc.fillColor('#9E9E9E').font('Helvetica').fontSize(9)
+  doc.font('Helvetica').text(`Completion Date`, boxX + 10, boxY + 44)
+  doc.font('Helvetica-Bold').text(`:  ${cert.completionDate || '2026-08-28'}`, boxX + 85, boxY + 44)
+
+  doc.font('Helvetica').text(`Course Duration`, boxX + 10, boxY + 60)
+  doc.font('Helvetica-Bold').text(`:  ${cert.duration || '15 Days'}`, boxX + 85, boxY + 60)
+
+  doc.font('Helvetica').text(`Grade`, boxX + 10, boxY + 76)
+  doc.font('Helvetica-Bold').text(`:  ${cert.grade || 'A+ (94%)'}`, boxX + 85, boxY + 76)
+
+  doc.fillColor('#0F5C5E').font('Helvetica').fontSize(8)
+  doc.text('Scan to verify: www.tailorconnect.com/verify', boxX + 10, boxY + 96)
+
+  // 7. Certificate Title
+  doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(28)
+  doc.text('CERTIFICATE', 0, 115, { align: 'center' })
+
+  doc.fillColor('#C5A059').font('Helvetica-Bold').fontSize(20)
+  doc.text('OF COMPLETION', 0, 148, { align: 'center' })
+
+  doc.fillColor('#666666').font('Helvetica').fontSize(11)
+  doc.text('THIS IS TO CERTIFY THAT', 0, 190, { align: 'center' })
+
+  // 8. Student Name
+  doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(32)
+  doc.text(cert.studentName || 'Priya S', 0, 218, { align: 'center' })
+  doc.moveTo(260, 258).lineTo(W - 260, 258).strokeColor('#C5A059').lineWidth(1.5).stroke()
+
+  // 9. Course Description
+  doc.fillColor('#666666').font('Helvetica').fontSize(11)
+  doc.text('has successfully completed the course', 0, 275, { align: 'center' })
+
+  doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(22)
+  doc.text(cert.courseName || 'Advanced Aari Embroidery', 0, 298, { align: 'center' })
+
+  doc.fillColor('#555555').font('Helvetica').fontSize(10.5)
   doc.text(
-    `Certificate ID: ${cert.certificateId || cert.id} • Issued on ${cert.completionDate || new Date().toISOString().split('T')[0]} • Verification: ${cert.verificationCode || 'TC-VERIFIED'}`,
-    0,
-    pageHeight - 50,
-    { align: 'center' }
+    'offered by TailorConnect and has demonstrated the required skills and knowledge in the field of fashion and tailoring.',
+    120,
+    332,
+    { align: 'center', width: W - 240 }
   )
+
+  // 10. Skill Badges Row
+  const skillY = 378
+  const skillWidth = 130
+  const skillStartX = (W - (skillWidth * 4 + 30)) / 2
+
+  const skills = [
+    'Aari Embroidery',
+    'Advanced Techniques',
+    'Fashion Design Skills',
+    'Lifelong Learning'
+  ]
+
+  skills.forEach((s, idx) => {
+    const sx = skillStartX + idx * (skillWidth + 10)
+    doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(9)
+    doc.text(s, sx, skillY, { width: skillWidth, align: 'center' })
+
+    if (idx < 3) {
+      doc.moveTo(sx + skillWidth + 5, skillY - 4).lineTo(sx + skillWidth + 5, skillY + 16).strokeColor('#C5A059').lineWidth(0.8).stroke()
+    }
+  })
+
+  // 11. Signatures & Footer Motto
+  const sigY = 475
+
+  // Left Signature: Instructor
+  doc.moveTo(90, sigY).lineTo(260, sigY).strokeColor('#0F172A').lineWidth(1).stroke()
+  doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(11)
+  doc.text(cert.tailorName || 'Anitha R', 90, sigY + 8, { width: 170, align: 'center' })
+  doc.fillColor('#666666').font('Helvetica').fontSize(9)
+  doc.text('Course Instructor', 90, sigY + 22, { width: 170, align: 'center' })
+  doc.text(cert.shopName || 'TailorConnect Academy', 90, sigY + 34, { width: 170, align: 'center' })
+
+  // Center Motto
+  doc.fillColor('#C5A059').font('Helvetica-Oblique').fontSize(16)
+  doc.text('Learn • Create • Grow', 0, sigY + 10, { align: 'center' })
+
+  // Right Signature: CEO
+  doc.moveTo(W - 260, sigY).lineTo(W - 90, sigY).strokeColor('#0F172A').lineWidth(1).stroke()
+  doc.fillColor('#0F172A').font('Helvetica-Bold').fontSize(11)
+  doc.text('Ragul K', W - 260, sigY + 8, { width: 170, align: 'center' })
+  doc.fillColor('#666666').font('Helvetica').fontSize(9)
+  doc.text('CEO & Founder', W - 260, sigY + 22, { width: 170, align: 'center' })
+  doc.text('TailorConnect Platform', W - 260, sigY + 34, { width: 170, align: 'center' })
 
   doc.end()
 }

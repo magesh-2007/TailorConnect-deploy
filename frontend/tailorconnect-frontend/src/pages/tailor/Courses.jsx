@@ -233,11 +233,35 @@ export default function TailorCourses() {
   const [newLessonTitle, setNewLessonTitle] = useState('')
   const [newLessonVideo, setNewLessonVideo] = useState('')
   const [newLessonDuration, setNewLessonDuration] = useState('15 min')
+
+  // Video File Upload states
+  const [videoSourceType, setVideoSourceType] = useState('file') // 'file' | 'url'
+  const [selectedVideoFile, setSelectedVideoFile] = useState(null)
+  const [videoFileName, setVideoFileName] = useState('')
+  const [videoFileSize, setVideoFileSize] = useState('')
+  const [videoFilePreview, setVideoFilePreview] = useState('')
+
   const [newQuizQuestion, setNewQuizQuestion] = useState('')
   const [newQuizOptions, setNewQuizOptions] = useState(['', '', '', ''])
   const [newQuizCorrect, setNewQuizCorrect] = useState(0)
   const [newAssignmentTitle, setNewAssignmentTitle] = useState('')
   const [newAssignmentDesc, setNewAssignmentDesc] = useState('')
+
+  const handleVideoFileChange = (e) => {
+    const file = e.target.files && e.target.files[0]
+    if (!file) return
+    setSelectedVideoFile(file)
+    setVideoFileName(file.name)
+    const sizeMb = (file.size / (1024 * 1024)).toFixed(1)
+    setVideoFileSize(`${sizeMb} MB`)
+    const objectUrl = URL.createObjectURL(file)
+    setVideoFilePreview(objectUrl)
+    setNewLessonVideo(objectUrl)
+    if (!newLessonTitle) {
+      const cleanTitle = file.name.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+      setNewLessonTitle(cleanTitle.charAt(0).toUpperCase() + cleanTitle.slice(1))
+    }
+  }
 
   const openContentModal = (course, type = 'lesson') => {
     setActiveCourseForContent(course)
@@ -245,6 +269,11 @@ export default function TailorCourses() {
     setNewLessonTitle('')
     setNewLessonVideo('https://www.w3schools.com/html/mov_bbb.mp4')
     setNewLessonDuration('15 min')
+    setVideoSourceType('file')
+    setSelectedVideoFile(null)
+    setVideoFileName('')
+    setVideoFileSize('')
+    setVideoFilePreview('')
     setNewQuizQuestion('')
     setNewQuizOptions(['Option A', 'Option B', 'Option C', 'Option D'])
     setNewQuizCorrect(0)
@@ -369,7 +398,7 @@ export default function TailorCourses() {
                 </p>
 
                 {/* CURRICULUM METRICS */}
-                <div style={{ background: 'var(--bg-subtle)', padding: 10, borderRadius: 6, border: '1px solid var(--border-light)', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, textAlign: 'center', fontSize: 11, marginBottom: 14 }}>
+                <div style={{ background: 'var(--bg-subtle)', padding: 10, borderRadius: 6, border: '1px solid var(--border-light)', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, textAlign: 'center', fontSize: 11, marginBottom: 14 }}>
                   <div>
                     <strong style={{ display: 'block', fontSize: 13 }}>{course.lessonsCount}</strong>
                     <span>Lessons</span>
@@ -382,18 +411,14 @@ export default function TailorCourses() {
                     <strong style={{ display: 'block', fontSize: 13 }}>{course.assignmentsCount}</strong>
                     <span>Tasks</span>
                   </div>
-                  <div>
-                    <strong style={{ display: 'block', fontSize: 13 }}>{course.quizzesCount}</strong>
-                    <span>Quizzes</span>
-                  </div>
                 </div>
 
                 {/* ADD CURRICULUM CONTENT BUTTONS */}
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 4, marginBottom: 14 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 6, marginBottom: 14 }}>
                   <button
                     type="button"
                     className="btn btn-outline btn-sm"
-                    style={{ fontSize: 10, padding: '4px 2px' }}
+                    style={{ fontSize: 11, padding: '4px 2px' }}
                     onClick={() => openContentModal(course, 'lesson')}
                   >
                     + Lesson
@@ -401,7 +426,7 @@ export default function TailorCourses() {
                   <button
                     type="button"
                     className="btn btn-outline btn-sm"
-                    style={{ fontSize: 10, padding: '4px 2px' }}
+                    style={{ fontSize: 11, padding: '4px 2px' }}
                     onClick={() => openContentModal(course, 'video')}
                   >
                     + Video
@@ -409,18 +434,10 @@ export default function TailorCourses() {
                   <button
                     type="button"
                     className="btn btn-outline btn-sm"
-                    style={{ fontSize: 10, padding: '4px 2px' }}
+                    style={{ fontSize: 11, padding: '4px 2px' }}
                     onClick={() => openContentModal(course, 'assignment')}
                   >
                     + Task
-                  </button>
-                  <button
-                    type="button"
-                    className="btn btn-outline btn-sm"
-                    style={{ fontSize: 10, padding: '4px 2px' }}
-                    onClick={() => openContentModal(course, 'quiz')}
-                  >
-                    + Quiz
                   </button>
                 </div>
               </div>
@@ -556,8 +573,8 @@ export default function TailorCourses() {
         >
           <form onSubmit={handleSaveContentItem}>
             {/* CONTENT TYPE SELECTOR */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 6, marginBottom: 16 }}>
-              {['lesson', 'video', 'assignment', 'quiz'].map(t => (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8, marginBottom: 16 }}>
+              {['lesson', 'video', 'assignment'].map(t => (
                 <button
                   key={t}
                   type="button"
@@ -584,24 +601,105 @@ export default function TailorCourses() {
                     required
                   />
                 </div>
+
+                {/* VIDEO INPUT METHOD TABS */}
+                <div style={{ marginBottom: 16 }}>
+                  <div className="flex-between" style={{ marginBottom: 8 }}>
+                    <label className="form-label" style={{ margin: 0 }}>Video Source</label>
+                    <div style={{ display: 'flex', gap: 6 }}>
+                      <button
+                        type="button"
+                        className={`btn btn-sm ${videoSourceType === 'file' ? 'btn-primary' : 'btn-outline'}`}
+                        onClick={() => setVideoSourceType('file')}
+                        style={{ fontSize: 11.5, padding: '4px 10px' }}
+                      >
+                        📁 Local Video File
+                      </button>
+                      <button
+                        type="button"
+                        className={`btn btn-sm ${videoSourceType === 'url' ? 'btn-primary' : 'btn-outline'}`}
+                        onClick={() => setVideoSourceType('url')}
+                        style={{ fontSize: 11.5, padding: '4px 10px' }}
+                      >
+                        🔗 Video URL
+                      </button>
+                    </div>
+                  </div>
+
+                  {videoSourceType === 'file' ? (
+                    <div style={{
+                      border: '2px dashed var(--primary)',
+                      borderRadius: 10,
+                      padding: '16px 14px',
+                      textAlign: 'center',
+                      background: 'var(--primary-subtle, #F0FDF4)',
+                      transition: 'all 0.2s ease',
+                      position: 'relative'
+                    }}>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/mov,video/webm,video/mkv,video/*"
+                        id="course-video-file-picker"
+                        style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', opacity: 0, cursor: 'pointer' }}
+                        onChange={handleVideoFileChange}
+                      />
+                      {selectedVideoFile ? (
+                        <div>
+                          <span style={{ fontSize: 28 }}>🎥</span>
+                          <div style={{ fontWeight: 700, fontSize: 13, color: 'var(--primary-dark)', marginTop: 4 }}>
+                            {videoFileName}
+                          </div>
+                          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2 }}>
+                            Size: {videoFileSize} • Ready for HD Masterclass streaming
+                          </div>
+                          <span className="btn btn-sm btn-outline" style={{ marginTop: 8, fontSize: 11, pointerEvents: 'none' }}>
+                            🔄 Choose Different File
+                          </span>
+                        </div>
+                      ) : (
+                        <div>
+                          <span style={{ fontSize: 30 }}>📁</span>
+                          <div style={{ fontWeight: 700, fontSize: 13.5, color: 'var(--primary-dark)', marginTop: 4 }}>
+                            Click or Drag Video File Here to Add
+                          </div>
+                          <div style={{ fontSize: 11.5, color: 'var(--text-secondary)', marginTop: 2 }}>
+                            Supports MP4, MOV, WEBM, MKV video files directly from your computer
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="form-group" style={{ marginBottom: 0 }}>
+                      <input
+                        type="text"
+                        className="form-control"
+                        placeholder="https://www.w3schools.com/html/mov_bbb.mp4"
+                        value={newLessonVideo}
+                        onChange={(e) => setNewLessonVideo(e.target.value)}
+                      />
+                    </div>
+                  )}
+                </div>
+
                 <div className="form-row">
                   <div className="form-group">
                     <label className="form-label">Duration (Minutes)</label>
                     <input
                       type="text"
                       className="form-control"
-                      placeholder="e.g. 18 min"
+                      placeholder="e.g. 15 min"
                       value={newLessonDuration}
                       onChange={(e) => setNewLessonDuration(e.target.value)}
                     />
                   </div>
                   <div className="form-group">
-                    <label className="form-label">HD Video Stream URL</label>
+                    <label className="form-label">HD Stream Link / File Status</label>
                     <input
                       type="text"
                       className="form-control"
-                      value={newLessonVideo}
-                      onChange={(e) => setNewLessonVideo(e.target.value)}
+                      value={selectedVideoFile ? `Local File: ${videoFileName}` : newLessonVideo}
+                      readOnly
+                      style={{ background: '#F9FAFB' }}
                     />
                   </div>
                 </div>
@@ -636,46 +734,7 @@ export default function TailorCourses() {
               </>
             )}
 
-            {/* QUIZ FORM */}
-            {contentType === 'quiz' && (
-              <>
-                <div className="form-group">
-                  <label className="form-label">Quiz Question <span className="required">*</span></label>
-                  <input
-                    type="text"
-                    className="form-control"
-                    placeholder="e.g. What is the standard side seam margin allowance for bespoke bridal blouses?"
-                    value={newQuizQuestion}
-                    onChange={(e) => setNewQuizQuestion(e.target.value)}
-                    required
-                  />
-                </div>
-                {newQuizOptions.map((opt, oIdx) => (
-                  <div key={oIdx} className="form-group" style={{ marginBottom: 8 }}>
-                    <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                      <input
-                        type="radio"
-                        name="correctOpt"
-                        checked={newQuizCorrect === oIdx}
-                        onChange={() => setNewQuizCorrect(oIdx)}
-                      />
-                      <input
-                        type="text"
-                        className="form-control"
-                        placeholder={`Option ${String.fromCharCode(65 + oIdx)}`}
-                        value={opt}
-                        onChange={(e) => {
-                          const updatedOpts = [...newQuizOptions]
-                          updatedOpts[oIdx] = e.target.value
-                          setNewQuizOptions(updatedOpts)
-                        }}
-                        required
-                      />
-                    </div>
-                  </div>
-                ))}
-              </>
-            )}
+
 
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: 10, marginTop: 20 }}>
               <Button variant="outline" size="sm" onClick={() => setContentModalOpen(false)}>

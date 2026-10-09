@@ -1,48 +1,32 @@
 import React from 'react'
 
-const EmptyState = ({ 
-  icon = '📭', 
-  title = 'Nothing here yet', 
-  description = 'No items to display',
-  action = null 
-}) => {
+export default function EmptyState({ icon = '🧶', title = 'No items found', description = 'There is no data to display right now.', actionText, onAction }) {
   return (
-    <div className="empty-state">
-      <div className="empty-icon">{icon}</div>
-      <h3 className="empty-title">{title}</h3>
-      <p className="empty-description">{description}</p>
-      {action && <div className="empty-action">{action}</div>}
-      <style>{`
-        .empty-state {
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          justify-content: center;
-          padding: 60px 20px;
-          text-align: center;
-        }
-        .empty-icon {
-          font-size: 48px;
-          margin-bottom: 16px;
-        }
-        .empty-title {
-          font-size: 18px;
-          font-weight: 600;
-          color: var(--text);
-          margin: 0 0 8px 0;
-        }
-        .empty-description {
-          font-size: 14px;
-          color: var(--text-light);
-          margin: 0 0 20px 0;
-          max-width: 400px;
-        }
-        .empty-action {
-          margin-top: 8px;
-        }
-      `}</style>
+    <div style={{ textAlign: 'center', padding: '48px 24px', backgroundColor: '#FFFFFF', borderRadius: '16px', border: '1px solid #E3E8E6', margin: '20px 0' }}>
+      <div style={{ fontSize: '48px', marginBottom: '16px' }}>{icon}</div>
+      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '20px', fontWeight: 700, color: '#0F5C5E', margin: '0 0 8px 0' }}>
+        {title}
+      </h3>
+      <p style={{ color: '#667085', fontSize: '14px', maxWidth: '400px', margin: '0 auto 20px auto' }}>
+        {description}
+      </p>
+      {actionText && onAction && (
+        <button
+          onClick={onAction}
+          style={{
+            backgroundColor: '#0F5C5E',
+            color: '#FFFFFF',
+            border: 'none',
+            borderRadius: '10px',
+            padding: '10px 22px',
+            fontWeight: 700,
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}
+        >
+          {actionText}
+        </button>
+      )}
     </div>
   )
 }
-
-export default EmptyState

@@ -2,12 +2,14 @@ import React from 'react'
 import { Routes, Route } from 'react-router-dom'
 
 import ProtectedRoute from './components/ProtectedRoute'
+import ThemeSettingsWidget from './components/ThemeSettingsWidget'
 
 import Splash from './pages/Splash'
 import Home from './pages/Home'
 import RoleLogin from './pages/auth/RoleLogin'
 import RoleRegister from './pages/auth/RoleRegister'
 import ForgotPassword from './pages/auth/ForgotPassword'
+import VerifyEmail from './pages/auth/VerifyEmail'
 import NotFound from './pages/NotFound'
 import AdminLogin from './pages/admin/Login'
 
@@ -29,7 +31,7 @@ import CustomerNotifications from './pages/customer/Notifications'
 import CustomerReviews from './pages/customer/Reviews'
 import CustomerProfile from './pages/customer/Profile'
 import CustomerSettings from './pages/customer/Settings'
-import AIAssistant from './pages/customer/AIAssistant'
+import CustomerChatbot from './pages/customer/Chatbot'
 
 // Tailor
 import TailorDashboard from './pages/tailor/Dashboard'
@@ -56,7 +58,6 @@ import StudentMyCourses from './pages/student/MyCourses'
 import CourseDetail from './pages/student/CourseDetail'
 import StudentLessons from './pages/student/Lessons'
 import StudentAssignments from './pages/student/Assignments'
-import StudentQuizzes from './pages/student/Quizzes'
 import StudentCertificates from './pages/student/Certificates'
 import StudentProgress from './pages/student/Progress'
 import StudentChat from './pages/student/Chat'
@@ -78,7 +79,6 @@ import AdminPayments from './pages/admin/Payments'
 import AdminCourses from './pages/admin/Courses'
 import CourseApproval from './pages/admin/CourseApproval'
 import AdminAppointments from './pages/admin/Appointments'
-import AdminQuotations from './pages/admin/Quotations'
 import AdminOffers from './pages/admin/Offers'
 import Complaints from './pages/admin/Complaints'
 import AdminReviews from './pages/admin/Reviews'
@@ -92,18 +92,25 @@ import EmployeeOrders from './pages/employee/Orders'
 import EmployeeProfile from './pages/employee/Profile'
 import EmployeeSettings from './pages/employee/Settings'
 
+import VerifyCertificate from './pages/public/VerifyCertificate'
+
 export default function App() {
   return (
+    <>
     <Routes>
       {/* Root → Splash screen (auto-redirects to /home or dashboard) */}
       <Route path="/" element={<Splash />} />
       {/* Home / Landing page */}
       <Route path="/home" element={<Home />} />
+      {/* Public Certificate Verification */}
+      <Route path="/verify-certificate" element={<VerifyCertificate />} />
+      <Route path="/verify-certificate/:certificateId" element={<VerifyCertificate />} />
       {/* Auth */}
       <Route path="/login" element={<RoleLogin />} />
       <Route path="/login/:role" element={<RoleLogin />} />
       <Route path="/register" element={<RoleRegister />} />
       <Route path="/register/:role" element={<RoleRegister />} />
+      <Route path="/verify-email" element={<VerifyEmail />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       {/* Admin dedicated login */}
       <Route path="/admin/login" element={<AdminLogin />} />
@@ -131,7 +138,8 @@ export default function App() {
       <Route path="/customer/reviews" element={<ProtectedRoute role="customer"><CustomerReviews /></ProtectedRoute>} />
       <Route path="/customer/profile" element={<ProtectedRoute role="customer"><CustomerProfile /></ProtectedRoute>} />
       <Route path="/customer/settings" element={<ProtectedRoute role="customer"><CustomerSettings /></ProtectedRoute>} />
-      <Route path="/customer/ai"       element={<ProtectedRoute role="customer"><AIAssistant /></ProtectedRoute>} />
+      <Route path="/customer/chatbot"  element={<ProtectedRoute role="customer"><CustomerChatbot /></ProtectedRoute>} />
+      <Route path="/customer/ai"       element={<ProtectedRoute role="customer"><CustomerChatbot /></ProtectedRoute>} />
 
       {/* Tailor Routes */}
       <Route path="/tailor/dashboard" element={<ProtectedRoute role="tailor"><TailorDashboard /></ProtectedRoute>} />
@@ -158,7 +166,6 @@ export default function App() {
       <Route path="/student/courses/:id" element={<ProtectedRoute role="student"><CourseDetail /></ProtectedRoute>} />
       <Route path="/student/lessons" element={<ProtectedRoute role="student"><StudentLessons /></ProtectedRoute>} />
       <Route path="/student/assignments" element={<ProtectedRoute role="student"><StudentAssignments /></ProtectedRoute>} />
-      <Route path="/student/quizzes" element={<ProtectedRoute role="student"><StudentQuizzes /></ProtectedRoute>} />
       <Route path="/student/certificates" element={<ProtectedRoute role="student"><StudentCertificates /></ProtectedRoute>} />
       <Route path="/student/progress" element={<ProtectedRoute role="student"><StudentProgress /></ProtectedRoute>} />
       <Route path="/student/chat" element={<ProtectedRoute role="student"><StudentChat /></ProtectedRoute>} />
@@ -182,7 +189,6 @@ export default function App() {
       <Route path="/admin/requests"          element={<ProtectedRoute role="admin"><OrderManagement /></ProtectedRoute>} />
       <Route path="/admin/orders"            element={<ProtectedRoute role="admin"><OrderManagement /></ProtectedRoute>} />
       <Route path="/admin/order-assignment"  element={<ProtectedRoute role="admin"><AdminOrderAssignment /></ProtectedRoute>} />
-      <Route path="/admin/quotations"        element={<ProtectedRoute role="admin"><AdminQuotations /></ProtectedRoute>} />
       <Route path="/admin/appointments"      element={<ProtectedRoute role="admin"><AdminAppointments /></ProtectedRoute>} />
       {/* Financial */}
       <Route path="/admin/payments"          element={<ProtectedRoute role="admin"><AdminPayments /></ProtectedRoute>} />
@@ -208,5 +214,7 @@ export default function App() {
       {/* Fallback 404 */}
       <Route path="*" element={<NotFound />} />
     </Routes>
+    <ThemeSettingsWidget />
+    </>
   )
 }

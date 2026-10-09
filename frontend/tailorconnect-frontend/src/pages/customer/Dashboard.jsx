@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
+import { useLanguage } from '../../context/LanguageContext'
 import api from '../../services/api'
 
 const SERVICE_CATEGORIES = [
@@ -17,6 +18,7 @@ const SERVICE_CATEGORIES = [
 
 export default function CustomerDashboard() {
   const { user } = useAuth()
+  const { t } = useLanguage()
   const navigate = useNavigate()
 
   const [orders, setOrders] = useState([])
@@ -99,16 +101,16 @@ export default function CustomerDashboard() {
       <div className="page-header">
         <div>
           <h1 style={{ color: '#0F5C5E' }}>
-            Welcome back, {user?.name?.split(' ')[0] || 'there'} 👋
+            {t('Welcome back,')} {user?.name?.split(' ')[0] || 'there'} 👋
           </h1>
-          <p>Manage your tailoring requests, track deliveries, and discover new tailors.</p>
+          <p>{t('Manage your tailoring requests, track deliveries, and discover new tailors.')}</p>
         </div>
         <div className="page-actions">
           <Link to="/customer/create-order">
-            <button style={btnPrimary}>+ New Tailoring Request</button>
+            <button style={btnPrimary}>{t('+ New Tailoring Request')}</button>
           </Link>
           <Link to="/customer/tailors">
-            <button style={btnOutline}>🔍 Find Tailors</button>
+            <button style={btnOutline}>{t('🔍 Find Tailors')}</button>
           </Link>
         </div>
       </div>
@@ -151,24 +153,101 @@ export default function CustomerDashboard() {
                 }}>
                   {card.icon}
                 </div>
-                <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>View →</span>
+                <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600 }}>{t('View')} →</span>
               </div>
               <div style={{ fontSize: 30, fontWeight: 800, color: card.color, fontFamily: "'Outfit', sans-serif", lineHeight: 1 }}>
                 {card.value}
               </div>
-              <div style={{ fontSize: 13, fontWeight: 600, color: '#1F2937' }}>{card.title}</div>
-              <div style={{ fontSize: 12, color: '#9CA3AF' }}>{card.subtitle}</div>
+              <div style={{ fontSize: 13, fontWeight: 600, color: '#1F2937' }}>{t(card.title)}</div>
+              <div style={{ fontSize: 12, color: '#9CA3AF' }}>{t(card.subtitle)}</div>
             </div>
           </Link>
         ))}
+      </div>
+
+      {/* ── AI Chatbot Banner ── */}
+      <div style={{
+        background: 'linear-gradient(135deg, #0F5C5E 0%, #164E63 100%)',
+        borderRadius: 16,
+        padding: '18px 24px',
+        color: '#FFFFFF',
+        marginBottom: 28,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: 16,
+        boxShadow: '0 8px 24px rgba(15,92,94,0.18)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, maxWidth: 650 }}>
+          <div style={{
+            width: 52,
+            height: 52,
+            borderRadius: 14,
+            background: 'rgba(255,255,255,0.18)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: 28,
+            flexShrink: 0,
+            border: '1.5px solid rgba(255,255,255,0.4)',
+          }}>
+            🤖
+          </div>
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, color: '#FFFFFF', fontFamily: "'Outfit', sans-serif" }}>
+                TailorBot AI Chatbot
+              </h2>
+              <span style={{ fontSize: 10.5, fontWeight: 700, background: '#10B981', color: '#FFFFFF', padding: '2px 8px', borderRadius: 999 }}>
+                24/7 ACTIVE
+              </span>
+            </div>
+            <p style={{ margin: 0, fontSize: 13, color: '#E2E8F0', lineHeight: 1.5 }}>
+              Ask in Tamil or English! Get blouse design ideas, stitching rates, find top tailors near you in Chennai, Madurai & Coimbatore, and track your orders instantly.
+            </p>
+          </div>
+        </div>
+
+        <Link to="/customer/chatbot" style={{ textDecoration: 'none' }}>
+          <button
+            type="button"
+            style={{
+              padding: '10px 20px',
+              borderRadius: 10,
+              background: '#FFFFFF',
+              color: '#0F5C5E',
+              border: 'none',
+              fontWeight: 800,
+              fontSize: 13.5,
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 6,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+              transition: 'all 0.18s ease',
+            }}
+            onMouseEnter={e => {
+              e.currentTarget.style.transform = 'translateY(-2px)'
+              e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.18)'
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.transform = 'translateY(0)'
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.1)'
+            }}
+          >
+            <span>Ask Chatbot</span>
+            <span>→</span>
+          </button>
+        </Link>
       </div>
 
       {/* ── Appointments Preview ── */}
       {appointments.length > 0 && (
         <div style={{ background: '#FFFFFF', border: '1.5px solid #E3E8E6', borderRadius: 14, overflow: 'hidden', marginBottom: 28 }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid #E8EFF7', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0F5C5E', margin: 0 }}>📅 Upcoming Appointments</h2>
-            <Link to="/customer/appointments" style={{ fontSize: 12.5, fontWeight: 600, color: '#0F5C5E' }}>View All →</Link>
+            <h2 style={{ fontSize: 15, fontWeight: 700, color: '#0F5C5E', margin: 0 }}>{t('📅 Upcoming Appointments')}</h2>
+            <Link to="/customer/appointments" style={{ fontSize: 12.5, fontWeight: 600, color: '#0F5C5E' }}>{t('View All →')}</Link>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))', gap: 1, background: '#E8EFF7' }}>
             {appointments.map(appt => (
@@ -193,14 +272,14 @@ export default function CustomerDashboard() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 18 }}>
           <div>
             <h2 style={{ fontSize: 18, color: '#0F5C5E', margin: 0, fontFamily: "'Outfit', sans-serif", fontWeight: 700 }}>
-              Explore Tailoring Services
+              {t('Explore Tailoring Services')}
             </h2>
             <p style={{ fontSize: 13, color: '#667085', margin: '3px 0 0' }}>
-              Click a category to find specialized tailors near you
+              {t('Click a category to find specialized tailors near you')}
             </p>
           </div>
           <Link to="/customer/tailors" style={{ fontSize: 13, fontWeight: 600, color: '#0F5C5E' }}>
-            Browse All →
+            {t('Browse All →')}
           </Link>
         </div>
 
@@ -226,8 +305,8 @@ export default function CustomerDashboard() {
               }}
             >
               <div style={{ fontSize: 26, marginBottom: 8 }}>{cat.icon}</div>
-              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0F5C5E', margin: '0 0 4px' }}>{cat.title}</h3>
-              <div style={{ fontSize: 12, color: '#0F5C5E', fontWeight: 600 }}>Find Tailors →</div>
+              <h3 style={{ fontSize: 14, fontWeight: 700, color: '#0F5C5E', margin: '0 0 4px' }}>{t(cat.title)}</h3>
+              <div style={{ fontSize: 12, color: '#0F5C5E', fontWeight: 600 }}>{t('Find Tailors →')}</div>
             </button>
           ))}
         </div>

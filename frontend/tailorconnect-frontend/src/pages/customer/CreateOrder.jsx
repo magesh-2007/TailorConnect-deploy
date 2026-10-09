@@ -5,10 +5,14 @@ import { useAuth } from '../../context/AuthContext'
 import api from '../../services/api'
 
 const STEPS = [
-  { step: 1, title: 'Service Type', icon: '👗' },
-  { step: 2, title: 'Design Details', icon: '✨' },
-  { step: 3, title: 'Budget & Delivery', icon: '📅' },
-  { step: 4, title: 'Review & Submit', icon: '🚀' },
+  { step: 1, title: 'Garment', icon: '👗' },
+  { step: 2, title: 'Design', icon: '🎨' },
+  { step: 3, title: 'Fabric', icon: '🧵' },
+  { step: 4, title: 'Measurements', icon: '📏' },
+  { step: 5, title: 'Customization', icon: '✨' },
+  { step: 6, title: 'Delivery', icon: '🚚' },
+  { step: 7, title: 'Review', icon: '📋' },
+  { step: 8, title: 'Submit', icon: '🚀' }
 ]
 
 const DRESS_CATEGORIES = [
@@ -42,26 +46,57 @@ export default function CreateOrder() {
   const [submitted, setSubmitted] = useState(null)
   const [error, setError] = useState('')
 
-  // Step 1
+  // Saved Measurement Profiles
+  const [savedProfiles, setSavedProfiles] = useState([])
+  const [selectedProfileId, setSelectedProfileId] = useState('')
+
+  // Form State across 8 Steps
   const [dressCategory, setDressCategory] = useState(preselectedService || '')
   const [customName, setCustomName] = useState('')
-
-  // Step 2
   const [designDescription, setDesignDescription] = useState('')
   const [neckPattern, setNeckPattern] = useState('')
   const [sleeveStyle, setSleeveStyle] = useState('')
   const [referenceImages, setReferenceImages] = useState([])
   const [referenceImagePreviews, setReferenceImagePreviews] = useState([])
-  const [measurementsNotes, setMeasurementsNotes] = useState('')
-  const [provideMeasurements, setProvideMeasurements] = useState(false)
-  const [measurements, setMeasurements] = useState({ chest: '', waist: '', shoulder: '', sleeve: '', hip: '', length: '', neck: '' })
+  
+  // Fabric Step
+  const [fabricMaterial, setFabricMaterial] = useState('Pure Silk')
+  const [fabricColor, setFabricColor] = useState('Crimson Pink & Gold')
 
-  // Step 3
+  // Measurements Step
+  const [measurementsNotes, setMeasurementsNotes] = useState('')
+  const [measurements, setMeasurements] = useState({ chest: '36', waist: '30', shoulder: '14.5', sleeve: '11.0', hip: '38', length: '15.0', neck: '7.0', armhole: '16.5' })
+
+  // Customization Step
+  const [quantity, setQuantity] = useState(1)
+  const [specialNotes, setSpecialNotes] = useState('')
+
+  // Delivery Step
   const [urgency, setUrgency] = useState('standard')
   const [deadline, setDeadline] = useState('')
-  const [budget, setBudget] = useState('')
-  const [location, setLocation] = useState(user?.location || '')
-  const [specialNotes, setSpecialNotes] = useState('')
+  const [budget, setBudget] = useState('1500')
+  const [location, setLocation] = useState(user?.location || 'Chennai')
+
+  React.useEffect(() => {
+    api.get('/measurements').then(res => {
+      const list = res.data?.data?.profiles || []
+      setSavedProfiles(list)
+      if (list.length > 0) {
+        const def = list.find(p => p.isDefault) || list[0]
+        setSelectedProfileId(def._id)
+        setMeasurements({
+          chest: def.chest || '36',
+          waist: def.waist || '30',
+          shoulder: def.shoulder || '14.5',
+          sleeve: def.sleeveLength || '11.0',
+          hip: def.hip || '38',
+          length: def.dressLength || '15.0',
+          neck: def.neck || '7.0',
+          armhole: def.armhole || '16.5'
+        })
+      }
+    }).catch(() => {})
+  }, [])
 
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files).slice(0, 3 - referenceImages.length)

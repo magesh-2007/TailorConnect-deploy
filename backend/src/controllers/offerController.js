@@ -26,11 +26,12 @@ const formatOffer = (o) => {
 
 export const getOffers = async (req, res, next) => {
   try {
-    const { targetAudience, status, category, page = 1, limit = 20 } = req.query
+    const { targetAudience, status, category, tailorId, page = 1, limit = 20 } = req.query
     const skip = (Number(page) - 1) * Number(limit)
 
     const filter = {}
     if (status) filter.status = status
+    if (tailorId) filter.tailorId = tailorId
     if (targetAudience && targetAudience !== 'All') filter.targetAudience = targetAudience
     if (category && category !== 'All') filter.category = new RegExp(category, 'i')
 

@@ -6,6 +6,7 @@ import Course from '../models/Course.js'
 import Payment from '../models/Payment.js'
 import Offer from '../models/Offer.js'
 import Review from '../models/Review.js'
+import AuditLog from '../models/AuditLog.js'
 import { sendSuccess, sendError } from '../utils/response.js'
 
 // ─── GET /api/admin/dashboard ────────────────────────────────────────────────
@@ -654,3 +655,21 @@ export const getAllReviews = async (req, res, next) => {
     next(err)
   }
 }
+
+// ─── GET /api/admin/audit-logs ────────────────────────────────────────────────
+export const getAuditLogs = async (req, res, next) => {
+  try {
+    const { page = 1, limit = 50 } = req.query
+    const [logs, total] = await Promise.all([
+      AuditLog.find({})
+        .sort({ createdAt: -1 })
+        .skip((page - 1) * Number(limit))
+        .limit(Number(limit)),
+      AuditLog.countDocuments()
+    ])
+    return sendSuccess(res, 'Audit logs retrieved.', { logs: logs.map(l => l.toObject()), total, page: Number(page) })
+  } catch (err) {
+    next(err)
+  }
+}
+

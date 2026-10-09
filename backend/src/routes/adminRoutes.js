@@ -16,6 +16,7 @@ import {
   getReports,
   getAdminNotifications,
   getAllReviews,
+  getAuditLogs,
   verifyTailor,
   toggleUserStatus,
   createEmployee,
@@ -59,6 +60,7 @@ router.get('/reviews', getAllReviews)
 
 // ── Reports & Analytics ───────────────────────────────────────────────────────
 router.get('/reports', getReports)
+router.get('/audit-logs', getAuditLogs)
 
 // ── Notifications ─────────────────────────────────────────────────────────────
 router.get('/notifications', getAdminNotifications)

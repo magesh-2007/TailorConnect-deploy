@@ -11,11 +11,21 @@ const tailorProfileSchema = new mongoose.Schema(
     services: { type: [String], default: ['Aari Blouse Stitching', 'Bridal Blouse Designing', 'Silk Saree Kuchu', 'Custom Fit Alteration'] },
     rating: { type: Number, default: 4.8 },
     reviewCount: { type: Number, default: 0 },
-    verificationStatus: { type: String, enum: ['PENDING', 'VERIFIED', 'REJECTED'], default: 'VERIFIED' },
+    verificationStatus: { type: String, enum: ['PENDING', 'UNDER_REVIEW', 'VERIFIED', 'REJECTED', 'SUSPENDED'], default: 'VERIFIED' },
     dailyCapacity: { type: Number, default: 5 },
     urgentAvailable: { type: Boolean, default: true },
     avatar: { type: String },
-    coverImage: { type: String }
+    coverImage: { type: String },
+    locationCoords: {
+      lat: { type: Number, default: 13.0827 },
+      lng: { type: Number, default: 80.2707 }
+    },
+    startingPrice: { type: Number, default: 1200 },
+    estimatedDeliveryTime: { type: String, default: '3-5 Days' },
+    completedOrders: { type: Number, default: 48 },
+    totalEarnings: { type: Number, default: 0 },
+    responseTime: { type: String, default: '< 30 mins' },
+    satisfactionRate: { type: Number, default: 98 }
   },
   { timestamps: true }
 )

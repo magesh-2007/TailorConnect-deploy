@@ -6,6 +6,7 @@ const courseRegistrationSchema = new mongoose.Schema(
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
     tailorId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     paymentId: { type: String },
+    amountPaid: { type: Number, default: 0 },
     status: {
       type: String,
       enum: ['REGISTERED', 'IN_PROGRESS', 'COMPLETED', 'CANCELLED'],

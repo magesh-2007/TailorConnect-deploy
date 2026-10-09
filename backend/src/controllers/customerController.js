@@ -47,3 +47,47 @@ export const updateProfile = async (req, res, next) => {
     next(err)
   }
 }
+
+export const getRecommendations = async (req, res, next) => {
+  try {
+    const userLocation = req.user?.location || 'Chennai'
+    const User = (await import('../models/User.js')).default
+    const TailorProfile = (await import('../models/TailorProfile.js')).default
+    const Portfolio = (await import('../models/Portfolio.js')).default
+
+    const recommendedTailorUsers = await User.find({
+      role: 'TAILOR',
+      isActive: { $ne: false }
+    }).limit(10)
+
+    const tailorUserIds = recommendedTailorUsers.map(u => u._id)
+    const profiles = await TailorProfile.find({ userId: { $in: tailorUserIds } })
+    const portfolioItems = await Portfolio.find({ tailorId: { $in: tailorUserIds } }).limit(8)
+
+    const profileMap = new Map(profiles.map(p => [p.userId.toString(), p.toObject()]))
+
+    const tailors = recommendedTailorUsers.map(u => {
+      const p = profileMap.get(u._id.toString()) || {}
+      return {
+        ...u.toObject(),
+        ...p,
+        id: u._id,
+        name: u.name,
+        email: u.email,
+        phone: u.phone,
+        profileImage: u.profileImage,
+        rating: p.rating || 4.8,
+        shopName: p.shopName || `${u.name}'s Studio`,
+        verificationStatus: p.verificationStatus || 'VERIFIED'
+      }
+    })
+
+    return sendSuccess(res, 'Recommendations retrieved.', {
+      tailors,
+      designs: portfolioItems.map(item => item.toObject())
+    })
+  } catch (err) {
+    next(err)
+  }
+}
+

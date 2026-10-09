@@ -2,6 +2,17 @@ import jwt from 'jsonwebtoken'
 import User from '../models/User.js'
 import { sendError } from '../utils/response.js'
 
+// ── Startup Guard ────────────────────────────────────────────────────────────
+// Fail fast if JWT_SECRET is not configured. A hardcoded fallback is a serious
+// security risk in production — always require the secret from the environment.
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  throw new Error(
+    '[auth middleware] JWT_SECRET is not set in the environment variables. ' +
+    'Please add JWT_SECRET to your .env file before starting the server.'
+  )
+}
+
 export const authenticateUser = async (req, res, next) => {
   try {
     const authHeader = req.headers.authorization
@@ -11,10 +22,7 @@ export const authenticateUser = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1]
 
-    const decoded = jwt.verify(
-      token,
-      process.env.JWT_SECRET || 'super_secret_tailorconnect_jwt_key_2026_production_grade'
-    )
+    const decoded = jwt.verify(token, JWT_SECRET)
 
     // Always fetch the user from the database — never trust the role in the JWT alone.
     // This ensures that if an admin deactivates or role-changes a user, the change
@@ -32,8 +40,11 @@ export const authenticateUser = async (req, res, next) => {
     req.user = user
     next()
   } catch (err) {
-    if (err.name === 'JsonWebTokenError' || err.name === 'TokenExpiredError') {
-      return sendError(res, 'Invalid or expired token. Please log in again.', 401)
+    if (err.name === 'TokenExpiredError') {
+      return sendError(res, 'Your session has expired. Please log in again.', 401)
+    }
+    if (err.name === 'JsonWebTokenError') {
+      return sendError(res, 'Invalid token. Please log in again.', 401)
     }
     return sendError(res, 'Authentication failed.', 401)
   }

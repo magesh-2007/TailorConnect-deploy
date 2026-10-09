@@ -2,6 +2,8 @@ import User from '../models/User.js'
 import TailorProfile from '../models/TailorProfile.js'
 import Portfolio from '../models/Portfolio.js'
 import Review from '../models/Review.js'
+import Course from '../models/Course.js'
+import Offer from '../models/Offer.js'
 import { sendSuccess, sendError } from '../utils/response.js'
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -87,16 +89,28 @@ export const getTailorById = async (req, res, next) => {
   try {
     const { id } = req.params
 
-    const user = await User.findOne({ _id: id, role: 'TAILOR' }).catch(() => null)
+    let user = await User.findOne({ _id: id, role: 'TAILOR' }).catch(() => null)
+    if (!user) {
+      const p = await TailorProfile.findById(id).catch(() => null)
+      if (p) {
+        user = await User.findById(p.userId).catch(() => null)
+      }
+    }
     if (!user) return sendError(res, 'Tailor not found.', 404)
 
-    const profile = await TailorProfile.findOne({ userId: user._id })
-    const portfolio = await Portfolio.find({ tailorId: user._id }).sort({ createdAt: -1 })
-    const reviews = await Review.find({ tailorId: user._id }).sort({ createdAt: -1 })
+    const [profile, portfolio, reviews, courses, offers] = await Promise.all([
+      TailorProfile.findOne({ userId: user._id }),
+      Portfolio.find({ tailorId: user._id }).sort({ createdAt: -1 }),
+      Review.find({ tailorId: user._id }).sort({ createdAt: -1 }),
+      Course.find({ tailorId: user._id }).sort({ createdAt: -1 }),
+      Offer.find({ tailorId: user._id }).sort({ createdAt: -1 })
+    ])
 
     const json = formatTailor(user, profile)
     json.portfolio = portfolio.map((p) => p.toObject())
     json.reviews = reviews.map((r) => r.toObject())
+    json.courses = courses.map((c) => (c.toObject ? c.toObject() : c))
+    json.offers = offers.map((o) => (o.toObject ? o.toObject() : o))
 
     return sendSuccess(res, 'Tailor profile details.', { tailor: json })
   } catch (err) {
