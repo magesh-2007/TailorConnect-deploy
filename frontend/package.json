@@ -1,10 +1,11 @@
 {
-  "name": "tailorconnect-root",
+  "name": "tailorconnect-frontend-root",
   "private": true,
   "version": "1.0.0",
   "scripts": {
+    "install": "npm --prefix tailorconnect-frontend install",
+    "build": "npm --prefix tailorconnect-frontend install && npm --prefix tailorconnect-frontend run build",
     "dev": "npm --prefix tailorconnect-frontend run dev",
-    "build": "npm --prefix tailorconnect-frontend run build",
     "preview": "npm --prefix tailorconnect-frontend run preview"
   }
 }
