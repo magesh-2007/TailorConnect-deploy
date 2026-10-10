@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef } from 'react'
 import DashboardLayout from '../../layouts/DashboardLayout'
 import { useAuth } from '../../context/AuthContext'
-import api from '../../services/api'
+import api, { SERVER_URL } from '../../services/api'
 
 const CITIES = ['Chennai','Coimbatore','Madurai','Trichy','Salem','Tirunelveli','Vellore','Erode','Tiruppur','Thanjavur']
 const STYLE_PREFS = ['Bridal','Casual','Formal','Fusion','Traditional','Indo-Western','Party Wear']
@@ -155,7 +155,7 @@ export default function CustomerProfile() {
       fd.append('file', file)
       const res = await api.post('/upload', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
       const url = res.data?.data?.url || res.data?.url
-      if (url) setField('avatar', url.startsWith('http') ? url : `http://localhost:5000${url}`)
+      if (url) setField('avatar', url.startsWith('http') ? url : `${SERVER_URL}${url}`)
       showToast('✅ Photo uploaded!')
     } catch {
       showToast('📷 Photo preview set (save to persist)')

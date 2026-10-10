@@ -54,10 +54,9 @@ app.use(
   cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
-      if (!origin || allowedOrigins.includes(origin)) {
-        return callback(null, true)
-      }
-      return callback(null, true) // Permissive for local dev
+      if (!origin) return callback(null, true)
+      // Allow matching origins, preview/prod vercel URLs, onrender URLs
+      return callback(null, origin)
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],

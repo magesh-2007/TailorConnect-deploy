@@ -2,8 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { useParams, useSearchParams, Link } from 'react-router-dom'
 import axios from 'axios'
 import Logo from '../../components/Logo'
-
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:5000/api'
+import { API_URL as API_BASE } from '../../services/api'
 
 export default function VerifyCertificate() {
   const { certificateId } = useParams()
