@@ -9,28 +9,30 @@ export const connectDB = async () => {
   if (mongoose.connection.readyState === 1) {
     return
   }
-  const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/tailorconnect'
+  const uri = process.env.MONGODB_URI
+  if (!uri) {
+    console.warn('[Database] ⚠️ MONGODB_URI is not set in Environment Variables. Falling back to local/in-memory.')
+  }
+  const targetUri = uri || 'mongodb://127.0.0.1:27017/tailorconnect'
   try {
-    await mongoose.connect(uri, { serverSelectionTimeoutMS: 3000 })
-    console.log('[Database] MongoDB Connected:', uri)
+    await mongoose.connect(targetUri, { serverSelectionTimeoutMS: 5000 })
+    console.log('[Database] ✅ MongoDB Connected successfully:', targetUri.replace(/\/\/.*@/, '//<credentials>@'))
   } catch (err) {
-    if (err.code === 'ECONNREFUSED' || err.message?.includes('ECONNREFUSED') || err.name === 'MongooseServerSelectionError') {
-      console.warn('[Database] Local MongoDB unavailable. Starting in-memory MongoDB server...')
+    console.warn('[Database] Primary MongoDB connection failed:', err.message)
+    console.warn('[Database] Attempting In-Memory MongoDB server fallback...')
+    try {
+      const { MongoMemoryServer } = await import('mongodb-memory-server')
       try {
-        const { MongoMemoryServer } = await import('mongodb-memory-server')
-        try {
-          mongoServer = await MongoMemoryServer.create()
-        } catch {
-          mongoServer = await MongoMemoryServer.create({ instance: { dbName: 'tailorconnect_fallback' } })
-        }
-        const memUri = mongoServer.getUri()
-        await mongoose.connect(memUri)
-        console.log('[Database] In-Memory MongoDB Connected:', memUri)
-      } catch (memErr) {
-        console.error('[Database] Failed to start MongoMemoryServer:', memErr.message)
-        throw err
+        mongoServer = await MongoMemoryServer.create()
+      } catch {
+        mongoServer = await MongoMemoryServer.create({ instance: { dbName: 'tailorconnect_fallback' } })
       }
-    } else {
+      const memUri = mongoServer.getUri()
+      await mongoose.connect(memUri)
+      console.log('[Database] ✅ In-Memory MongoDB Connected:', memUri)
+    } catch (memErr) {
+      console.error('[Database] ❌ Failed to start In-Memory MongoDB:', memErr.message)
+      console.error('[Database] 👉 Please provide a valid MONGODB_URI (e.g. MongoDB Atlas) in your Render Environment Variables!')
       throw err
     }
   }
