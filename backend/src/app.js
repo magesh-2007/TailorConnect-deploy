@@ -79,14 +79,15 @@ app.use('/api', apiRateLimiter)
 
 // Root URL redirect / welcome page
 app.get('/', (req, res) => {
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
   if (req.accepts('html')) {
-    return res.redirect('http://localhost:5173')
+    return res.redirect(clientUrl)
   }
   return res.json({
     success: true,
-    message: 'TailorConnect API is running. Open the Web App at http://localhost:5173',
-    frontendUrl: 'http://localhost:5173',
-    docs: 'http://localhost:5000/api/docs'
+    message: `TailorConnect API is running. Open the Web App at ${clientUrl}`,
+    frontendUrl: clientUrl,
+    docs: '/api/docs'
   })
 })
 
