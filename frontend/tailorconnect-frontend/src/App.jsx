@@ -98,10 +98,12 @@ export default function App() {
   return (
     <>
     <Routes>
-      {/* Root → Splash screen (auto-redirects to /home or dashboard) */}
-      <Route path="/" element={<Splash />} />
+      {/* Root → Landing page */}
+      <Route path="/" element={<Home />} />
       {/* Home / Landing page */}
       <Route path="/home" element={<Home />} />
+      {/* Splash screen */}
+      <Route path="/splash" element={<Splash />} />
       {/* Public Certificate Verification */}
       <Route path="/verify-certificate" element={<VerifyCertificate />} />
       <Route path="/verify-certificate/:certificateId" element={<VerifyCertificate />} />

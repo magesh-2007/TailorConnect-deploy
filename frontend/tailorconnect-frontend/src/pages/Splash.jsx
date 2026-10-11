@@ -20,20 +20,16 @@ export default function Splash() {
     const timer = setTimeout(async () => {
       setFadeOut(true)
       setTimeout(async () => {
-        // If user is currently Admin, or no user is logged in, open Customer Dashboard
-        if (!user || user.role?.toLowerCase() === 'admin') {
-          if (switchRole) {
-            await switchRole('customer')
-          }
-          navigate('/customer/dashboard', { replace: true })
+        if (!user) {
+          navigate('/home', { replace: true })
           return
         }
 
         if (user?.role) {
           const dest = ROLE_DASHBOARD[user.role.toLowerCase()]
-          navigate(dest || '/customer/dashboard', { replace: true })
+          navigate(dest || '/home', { replace: true })
         } else {
-          navigate('/customer/dashboard', { replace: true })
+          navigate('/home', { replace: true })
         }
       }, 400)
     }, 1200)
