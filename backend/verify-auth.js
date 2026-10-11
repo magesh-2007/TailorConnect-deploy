@@ -29,35 +29,35 @@ const ROLES = [
   {
     role: 'ADMIN',
     email: 'admin@tailorconnect.com',
-    password: 'Admin@12345',
+    password: 'admin123',
     ownPath: '/admin/dashboard',
     label: 'Platform Admin'
   },
   {
     role: 'TAILOR',
     email: 'tailor@tailorconnect.com',
-    password: 'Tailor@12345',
+    password: 'tailor123',
     ownPath: '/tailors/profile',
     label: 'Tailor'
   },
   {
     role: 'CUSTOMER',
     email: 'customer@tailorconnect.com',
-    password: 'Customer@12345',
+    password: 'customer123',
     ownPath: '/customers/profile',
     label: 'Customer'
   },
   {
     role: 'STUDENT',
     email: 'student@tailorconnect.com',
-    password: 'Student@12345',
+    password: 'student123',
     ownPath: '/students/profile',
     label: 'Student'
   },
   {
     role: 'EMPLOYEE',
     email: 'employee@tailorconnect.com',
-    password: 'Employee@12345',
+    password: 'employee123',
     ownPath: '/employees/dashboard',
     label: 'Employee'
   }
