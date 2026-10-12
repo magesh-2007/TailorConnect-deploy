@@ -9,6 +9,10 @@ export const swaggerSpec = {
   },
   servers: [
     {
+      url: 'https://tailorconnect-deploy.onrender.com',
+      description: 'Production Server (Render)'
+    },
+    {
       url: 'http://localhost:5000',
       description: 'Development Server'
     }

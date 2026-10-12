@@ -47,6 +47,7 @@ const allowedOrigins = [
   'http://localhost:5173',
   'http://127.0.0.1:5173',
   'http://localhost:3000',
+  'https://tailorconnect-deploy-frontend.onrender.com',
   process.env.CLIENT_URL
 ].filter(Boolean)
 
@@ -79,7 +80,7 @@ app.use('/api', apiRateLimiter)
 
 // Root URL redirect / welcome page
 app.get('/', (req, res) => {
-  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+  const clientUrl = process.env.CLIENT_URL || 'https://tailorconnect-deploy-frontend.onrender.com'
   if (req.accepts('html')) {
     return res.redirect(clientUrl)
   }
